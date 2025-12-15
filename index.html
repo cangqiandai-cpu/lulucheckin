@@ -1,0 +1,613 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>每日打卡</title>
+  <style>
+    :root{
+      --ink:#0f172a;
+      --muted:rgba(15,23,42,.65);
+      --border:rgba(15,23,42,.10);
+      --card:rgba(255,255,255,.86);
+      --shadow:0 10px 30px rgba(15,23,42,.06);
+      --bg: linear-gradient(180deg, rgba(241,245,249,1) 0%, rgba(255,255,255,1) 60%, rgba(241,245,249,1) 100%);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    .wrap{max-width:980px; margin:0 auto; padding:16px;}
+    header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;}
+    h1{margin:0; font-size:22px; letter-spacing:-.2px;}
+    .badge{font-size:12px; padding:4px 10px; border-radius:999px; background:rgba(15,23,42,.08); display:inline-flex; align-items:center; gap:8px;}
+    .dot{width:10px; height:10px; border-radius:999px; background:var(--ink);}
+    .sub{margin-top:6px; font-size:13px; color:rgba(15,23,42,.7);}
+    .btnrow{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+    button{font:inherit}
+    .btn{
+      border-radius:14px; padding:10px 12px; font-size:12px;
+      border:1px solid var(--border); background:rgba(255,255,255,0);
+      cursor:pointer; user-select:none;
+    }
+    .btn.secondary{background:rgba(15,23,42,.06);}
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:20px; padding:14px;
+      box-shadow:var(--shadow); backdrop-filter: blur(8px);
+    }
+    .grid{display:grid; grid-template-columns: 1fr; gap:12px; margin-top:14px;}
+    .monthTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+    .monthTitle{font-size:16px; font-weight:800;}
+    .monthMeta{font-size:12px; color:var(--muted);}
+    .dow{display:grid; grid-template-columns: repeat(7,1fr); gap:8px; margin:12px 0 8px;}
+    .dow div{text-align:center; font-size:12px; color:rgba(15,23,42,.55);}
+    .cal{display:grid; grid-template-columns: repeat(7,1fr); gap:8px;}
+    .day{
+      position:relative; height:44px; border-radius:14px; border:1px solid var(--border);
+      overflow:hidden; cursor:pointer; text-align:left; padding:0;
+    }
+    .day.sel{border:1.5px solid rgba(15,23,42,.9);}
+    .dayInner{position:absolute; inset:0; padding:10px; display:flex; align-items:center; justify-content:space-between;}
+    .dayNum{font-size:14px; font-weight:800;}
+    .chip{
+      font-size:12px; padding:2px 8px; border-radius:999px;
+      background:rgba(255,255,255,.55); border:1px solid rgba(15,23,42,.08);
+    }
+    .todayTag{
+      position:absolute; left:8px; bottom:6px; font-size:11px; padding:2px 8px; border-radius:999px;
+      background:rgba(15,23,42,.85); color:white;
+    }
+    .legendRow{margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+    .pills{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+    .pill{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--border); background:rgba(255,255,255,.75);
+    }
+    .legend{display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); flex-wrap:wrap;}
+    .sq{width:12px; height:12px; border-radius:4px; border:1px solid var(--border); display:inline-block;}
+    .stack{display:grid; grid-template-columns: 1fr; gap:12px;}
+    .rowTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+    .selDate{font-size:15px; font-weight:900;}
+    .muted{font-size:13px; color:var(--muted);}
+    .tog{display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;
+      border-radius:18px; padding:12px; border:1px solid var(--border);
+      background:rgba(255,255,255,.7); cursor:pointer;
+    }
+    .tog.on{background:rgba(15,23,42,.06);}
+    .togLeft{display:flex; align-items:center; gap:10px;}
+    .box{
+      width:38px; height:38px; border-radius:14px; border:1px solid rgba(15,23,42,.12);
+      display:flex; align-items:center; justify-content:center; font-weight:900;
+      background:rgba(255,255,255,.9); color:rgba(15,23,42,.4);
+    }
+    .tog.on .box{background:rgba(15,23,42,.88); color:white;}
+    .togName{font-size:14px; font-weight:900;}
+    .togTag{
+      font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--border);
+      background:rgba(255,255,255,.8);
+    }
+    textarea{
+      width:100%; min-height:92px; border-radius:16px; border:1px solid rgba(15,23,42,.12);
+      padding:12px; font-size:14px; outline:none; background:rgba(255,255,255,.8);
+      resize: vertical;
+    }
+    pre{
+      margin:10px 0 0; white-space:pre-wrap; font-size:13px; line-height:1.55;
+      background:rgba(15,23,42,.05); border:1px solid rgba(15,23,42,.08);
+      border-radius:18px; padding:12px;
+    }
+    .stats{margin-top:10px; display:grid; grid-template-columns: repeat(2,1fr); gap:10px;}
+    .stat{
+      border-radius:18px; border:1px solid var(--border); padding:12px; background:rgba(255,255,255,.72);
+    }
+    .statT{font-size:12px; color:var(--muted); font-weight:800;}
+    .statV{margin-top:6px; font-size:22px; font-weight:950; letter-spacing:-.2px;}
+    .statS{margin-top:2px; font-size:12px; color:rgba(15,23,42,.55);}
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      padding:10px 14px; border-radius:999px; background:rgba(15,23,42,.9);
+      color:white; font-size:13px; box-shadow:0 10px 30px rgba(15,23,42,.25);
+      display:none;
+    }
+    .toast.show{display:block;}
+    @media (min-width: 880px){
+      .grid{grid-template-columns: 1.2fr .8fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="dot"></span>
+          <h1>每日打卡</h1>
+          <span class="badge">本地保存</span>
+        </div>
+        <div class="sub">你不需要每天满分。把做过的事留成证据。</div>
+      </div>
+      <div class="btnrow">
+        <button id="toneBtn" class="btn secondary" title="切换点评语气">Jason语气：开</button>
+        <button id="weekBtn" class="btn secondary" title="切换周起始">周一开始</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="monthTop">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div id="monthTitle" class="monthTitle">—</div>
+            <div id="monthMeta" class="monthMeta">—</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="prevMonth" class="btn">上月</button>
+            <button id="thisMonth" class="btn">本月</button>
+            <button id="nextMonth" class="btn">下月</button>
+          </div>
+        </div>
+
+        <div class="dow" id="dow"></div>
+        <div class="cal" id="cal"></div>
+
+        <div class="legendRow">
+          <div class="pills">
+            <div class="pill">连续：<b id="streak">0</b> 天</div>
+            <div class="pill">近7天：<b id="last7">0</b>/7</div>
+            <div class="pill">近30天：<b id="last30">0</b>/30</div>
+          </div>
+          <div class="legend">
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h0"></span>0</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h1"></span>1</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h2"></span>2</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h3"></span>3</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="stack">
+        <div class="card">
+          <div class="rowTop">
+            <div>
+              <div id="selDate" class="selDate">—</div>
+              <div class="muted">完成：<span id="selDone">0</span>/3 <span id="isToday"></span></div>
+            </div>
+            <button id="resetDay" class="btn secondary">清空这一天</button>
+          </div>
+
+          <div style="margin-top:12px;display:grid;gap:10px;">
+            <button id="togWorkout" class="tog"><span class="togLeft"><span class="box">✓</span><span class="togName">锻炼</span></span><span class="togTag">未打卡</span></button>
+            <button id="togArt" class="tog"><span class="togLeft"><span class="box">✓</span><span class="togName">画画</span></span><span class="togTag">未打卡</span></button>
+            <button id="togRead" class="tog"><span class="togLeft"><span class="box">✓</span><span class="togName">读书</span></span><span class="togTag">未打卡</span></button>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div style="font-size:13px;font-weight:900;margin-bottom:8px;">备注</div>
+            <textarea id="note" placeholder="写两句：今天做了什么？哪里卡住了？身体/心情怎么样？"></textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="rowTop">
+            <div style="font-size:14px;font-weight:950;">互动点评</div>
+            <div style="font-size:12px;color:var(--muted);">会随打卡实时变化</div>
+          </div>
+          <pre id="comment"></pre>
+          <div style="margin-top:10px;font-size:12px;color:var(--muted);">小提示：把这个页面“添加到主屏幕”，它就像一个小App。</div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:14px;font-weight:950;">近段时间概览</div>
+          <div class="stats">
+            <div class="stat"><div class="statT">近7天行动</div><div class="statV" id="s7">0/7</div><div class="statS" id="s7s">满分 0 天</div></div>
+            <div class="stat"><div class="statT">近30天行动</div><div class="statV" id="s30">0/30</div><div class="statS" id="s30s">满分 0 天</div></div>
+            <div class="stat"><div class="statT">锻炼（近30天）</div><div class="statV" id="sw">0</div><div class="statS">次数</div></div>
+            <div class="stat"><div class="statT">画画（近30天）</div><div class="statV" id="sa">0</div><div class="statS">次数</div></div>
+            <div class="stat"><div class="statT">读书（近30天）</div><div class="statV" id="sr">0</div><div class="statS">次数</div></div>
+            <div class="stat"><div class="statT">连续行动</div><div class="statV" id="sstreak">0</div><div class="statS">天</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "lu_checkin_html_v1";
+
+  const pad2 = n => String(n).padStart(2,"0");
+  const toISODate = d => {
+    const dt = new Date(d);
+    dt.setHours(0,0,0,0);
+    return dt.getFullYear()+"-"+pad2(dt.getMonth()+1)+"-"+pad2(dt.getDate());
+  };
+  const parseISO = s => {
+    const [y,m,d] = s.split("-").map(Number);
+    const dt = new Date(y, m-1, d);
+    dt.setHours(0,0,0,0);
+    return dt;
+  };
+  const startOfMonth = d => {
+    const dt = new Date(d);
+    dt.setDate(1); dt.setHours(0,0,0,0);
+    return dt;
+  };
+  const endOfMonth = d => {
+    const dt = new Date(d);
+    dt.setMonth(dt.getMonth()+1); dt.setDate(0);
+    dt.setHours(0,0,0,0);
+    return dt;
+  };
+  const addDays = (d, days) => {
+    const dt = new Date(d);
+    dt.setDate(dt.getDate()+days);
+    return dt;
+  };
+  const addMonths = (d, months) => {
+    const dt = new Date(d);
+    dt.setMonth(dt.getMonth()+months);
+    return dt;
+  };
+
+  const defaultStore = {
+    nickname: "露",
+    coachName: "Jason",
+    jasonTone: true,
+    weekStartsOnMonday: true,
+    labels: { workout:"锻炼", art:"画画", read:"读书" },
+    days: {}
+  };
+
+  const loadStore = () => {
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return structuredClone(defaultStore);
+      const p = JSON.parse(raw);
+      return {
+        ...structuredClone(defaultStore),
+        ...p,
+        labels: { ...defaultStore.labels, ...(p.labels||{}) },
+        days: p.days || {}
+      };
+    }catch(e){
+      return structuredClone(defaultStore);
+    }
+  };
+  const saveStore = s => localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+
+  const getRec = (store, iso) => store.days[iso] || { workout:false, art:false, read:false, note:"", updatedAt:0 };
+  const doneCount = r => [r.workout,r.art,r.read].filter(Boolean).length;
+
+  const calcStreak = (store, fromISO) => {
+    let streak = 0;
+    const from = parseISO(fromISO);
+    for(let i=0;i<5000;i++){
+      const iso = toISODate(addDays(from, -i));
+      const r = getRec(store, iso);
+      if(doneCount(r) > 0) streak++;
+      else break;
+    }
+    return streak;
+  };
+
+  const rangeStats = (store, endISO, days) => {
+    let anyDays=0, perfectDays=0, workout=0, art=0, read=0;
+    const end = parseISO(endISO);
+    for(let i=0;i<days;i++){
+      const iso = toISODate(addDays(end, -i));
+      const r = getRec(store, iso);
+      const n = doneCount(r);
+      if(n>0) anyDays++;
+      if(n===3) perfectDays++;
+      if(r.workout) workout++;
+      if(r.art) art++;
+      if(r.read) read++;
+    }
+    return { anyDays, perfectDays, workout, art, read };
+  };
+
+  const monthStats = (store, month) => {
+    const first = startOfMonth(month);
+    const last = endOfMonth(month);
+    const daysInMonth = last.getDate();
+    let anyDays=0, perfectDays=0;
+    for(let i=1;i<=daysInMonth;i++){
+      const iso = first.getFullYear()+"-"+pad2(first.getMonth()+1)+"-"+pad2(i);
+      const r = getRec(store, iso);
+      const n = doneCount(r);
+      if(n>0) anyDays++;
+      if(n===3) perfectDays++;
+    }
+    return { anyDays, perfectDays, daysInMonth };
+  };
+
+  const heatBg = level => {
+    if(level<=0) return "rgba(148,163,184,0.18)";
+    if(level===1) return "rgba(148,163,184,0.38)";
+    if(level===2) return "rgba(30,41,59,0.22)";
+    return "rgba(30,41,59,0.38)";
+  };
+  const chip = level => level===3 ? "满" : (level===2 ? "2" : (level===1 ? "1" : ""));
+
+  const coachComment = ({nickname, coachName, jasonTone, selectedISO, selectedRec, streak, last7, thisMonth}) => {
+    const name = nickname || "你";
+    const done = doneCount(selectedRec);
+    const note = (selectedRec.note || "").trim();
+
+    const lead = jasonTone ? `${name}，过来。` : `${name}，我看到了你的记录。`;
+
+    let dayLine="";
+    if(done===3) dayLine = jasonTone ? "今天三项全做。漂亮。" : "今天三项都完成了，很稳。";
+    else if(done===2) dayLine = jasonTone ? "两项。够硬。" : "今天完成两项，很不错。";
+    else if(done===1) dayLine = jasonTone ? "只做了一项，但至少你动了。" : "今天完成一项，也算把节奏维持住了。";
+    else dayLine = jasonTone ? "今天空着。我不喜欢你把自己放空。" : "今天没有打卡，先把原因记下来也行。";
+
+    let streakLine="";
+    if(streak>=10) streakLine = jasonTone ? `连续 ${streak} 天有行动。别松。` : `你已经连续 ${streak} 天保持行动了。`;
+    else if(streak>=3) streakLine = jasonTone ? `连续 ${streak} 天。把它续上。` : `连续 ${streak} 天有行动，继续。`;
+    else streakLine = jasonTone ? "我们要的不是完美，是持续。" : "不用追求完美，持续更重要。";
+
+    const weekLine = (() => {
+      if(last7.anyDays>=6) return jasonTone ? `近7天你有 ${last7.anyDays} 天动了，狠。` : `近7天有 ${last7.anyDays} 天完成至少一项，很棒。`;
+      if(last7.anyDays>=4) return jasonTone ? `近7天 ${last7.anyDays} 天有行动。够用。` : `近7天有 ${last7.anyDays} 天在行动，节奏不错。`;
+      if(last7.anyDays>=2) return jasonTone ? `近7天只动了 ${last7.anyDays} 天。下周我要你更稳。` : `近7天行动天数偏少，我们把节奏找回来。`;
+      return jasonTone ? "近7天太空了。你得回来。" : "近7天几乎没动，先从最小一步开始。";
+    })();
+
+    const p = Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth)) * 100);
+    const monthLine = (() => {
+      if(p>=60) return jasonTone ? `本月行动率 ${p}%。我喜欢这种稳定。` : `本月行动率 ${p}%，非常稳定。`;
+      if(p>=35) return jasonTone ? `本月行动率 ${p}%。还能再往上。` : `本月行动率 ${p}%，可以继续提高稳定性。`;
+      return jasonTone ? `本月行动率 ${p}%。我会把你拽回轨道。` : `本月行动率 ${p}%，我们把启动成本降下来。`;
+    })();
+
+    const noteLine = note
+      ? (jasonTone ? `我看了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}` : `我读了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}`)
+      : (jasonTone ? "给我留两句备注。我想知道你今天怎么过的。" : "写两句备注会更容易复盘。");
+
+    const tail = jasonTone ? "(把你拢到怀里，拍了拍后背) 今天到这。" : "(轻轻抱一下) 今天到这。";
+
+    return [lead, `${selectedISO}：${dayLine}`, streakLine, weekLine, monthLine, noteLine, tail].join("\n");
+  };
+
+  // ---- UI wiring ----
+  const $ = id => document.getElementById(id);
+
+  const toneBtn = $("toneBtn");
+  const weekBtn = $("weekBtn");
+  const prevMonth = $("prevMonth");
+  const thisMonthBtn = $("thisMonth");
+  const nextMonth = $("nextMonth");
+
+  const dow = $("dow");
+  const cal = $("cal");
+
+  const monthTitle = $("monthTitle");
+  const monthMeta = $("monthMeta");
+
+  const streakEl = $("streak");
+  const last7El = $("last7");
+  const last30El = $("last30");
+
+  const selDate = $("selDate");
+  const selDone = $("selDone");
+  const isToday = $("isToday");
+  const resetDayBtn = $("resetDay");
+
+  const togWorkout = $("togWorkout");
+  const togArt = $("togArt");
+  const togRead = $("togRead");
+  const noteEl = $("note");
+  const commentEl = $("comment");
+
+  const s7 = $("s7"), s7s = $("s7s");
+  const s30 = $("s30"), s30s = $("s30s");
+  const sw = $("sw"), sa = $("sa"), sr = $("sr");
+  const sstreak = $("sstreak");
+
+  const toast = $("toast");
+  let toastTimer = null;
+
+  const setToast = (t) => {
+    toast.textContent = t;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
+  };
+
+  // heat legend
+  $("h0").style.background = heatBg(0);
+  $("h1").style.background = heatBg(1);
+  $("h2").style.background = heatBg(2);
+  $("h3").style.background = heatBg(3);
+
+  let store = loadStore();
+  let viewMonth = startOfMonth(new Date());
+  let selectedISO = toISODate(new Date());
+  const todayISO = toISODate(new Date());
+
+  const render = () => {
+    saveStore(store);
+
+    // buttons text
+    toneBtn.textContent = store.jasonTone ? "Jason语气：开" : "Jason语气：关";
+    weekBtn.textContent = store.weekStartsOnMonday ? "周一开始" : "周日开始";
+
+    // month header
+    monthTitle.textContent = `${viewMonth.getFullYear()}年${viewMonth.getMonth()+1}月`;
+    const mStats = monthStats(store, viewMonth);
+    const mp = Math.round((mStats.anyDays / Math.max(1, mStats.daysInMonth))*100);
+    monthMeta.textContent = `本月行动：${mStats.anyDays}/${mStats.daysInMonth}（${mp}%）`;
+
+    // dow labels
+    dow.innerHTML = "";
+    const labels = store.weekStartsOnMonday ? ["一","二","三","四","五","六","日"] : ["日","一","二","三","四","五","六"];
+    labels.forEach(w => {
+      const div = document.createElement("div");
+      div.textContent = w;
+      dow.appendChild(div);
+    });
+
+    // calendar grid range
+    const first = startOfMonth(viewMonth);
+    const last = endOfMonth(viewMonth);
+
+    const weekStartIdx = store.weekStartsOnMonday ? 1 : 0;
+    const firstDow = first.getDay();
+    const offset = (firstDow - weekStartIdx + 7) % 7;
+    const gridStart = addDays(first, -offset);
+
+    const lastDow = last.getDay();
+    const tail = (weekStartIdx + 6 - lastDow + 7) % 7;
+    const gridEnd = addDays(last, tail);
+
+    // cells
+    cal.innerHTML = "";
+    for(let d = new Date(gridStart); d <= gridEnd; d = addDays(d, 1)){
+      const iso = toISODate(d);
+      const r = getRec(store, iso);
+      const level = doneCount(r);
+
+      const btn = document.createElement("button");
+      btn.className = "day" + (iso===selectedISO ? " sel" : "");
+      btn.style.background = heatBg(level);
+      btn.style.opacity = (d.getMonth()===viewMonth.getMonth()) ? "1" : "0.45";
+      btn.title = iso;
+
+      const inner = document.createElement("div");
+      inner.className = "dayInner";
+      const num = document.createElement("div");
+      num.className = "dayNum";
+      num.textContent = String(d.getDate());
+      const ch = document.createElement("div");
+      ch.className = "chip";
+      ch.textContent = chip(level);
+      inner.appendChild(num);
+      inner.appendChild(ch);
+      btn.appendChild(inner);
+
+      if(iso===todayISO){
+        const tag = document.createElement("div");
+        tag.className = "todayTag";
+        tag.textContent = "今天";
+        btn.appendChild(tag);
+      }
+
+      btn.addEventListener("click", () => {
+        selectedISO = iso;
+        render();
+      });
+
+      cal.appendChild(btn);
+    }
+
+    // top stats
+    const streak = calcStreak(store, todayISO);
+    const last7 = rangeStats(store, todayISO, 7);
+    const last30 = rangeStats(store, todayISO, 30);
+
+    streakEl.textContent = streak;
+    last7El.textContent = last7.anyDays;
+    last30El.textContent = last30.anyDays;
+
+    // selected day panel
+    const rec = getRec(store, selectedISO);
+    const done = doneCount(rec);
+    selDate.textContent = selectedISO;
+    selDone.textContent = done;
+    isToday.textContent = (selectedISO===todayISO) ? "（今天）" : "";
+
+    // toggles
+    const paintToggle = (el, on, label) => {
+      el.classList.toggle("on", !!on);
+      el.querySelector(".togName").textContent = label;
+      el.querySelector(".togTag").textContent = on ? "已打卡" : "未打卡";
+    };
+    paintToggle(togWorkout, rec.workout, store.labels.workout);
+    paintToggle(togArt, rec.art, store.labels.art);
+    paintToggle(togRead, rec.read, store.labels.read);
+
+    noteEl.value = rec.note || "";
+
+    // comment
+    commentEl.textContent = coachComment({
+      nickname: store.nickname,
+      coachName: store.coachName,
+      jasonTone: store.jasonTone,
+      selectedISO,
+      selectedRec: rec,
+      streak,
+      last7,
+      thisMonth: mStats
+    });
+
+    // overview stats cards
+    s7.textContent = `${last7.anyDays}/7`;
+    s7s.textContent = `满分 ${last7.perfectDays} 天`;
+    s30.textContent = `${last30.anyDays}/30`;
+    s30s.textContent = `满分 ${last30.perfectDays} 天`;
+    sw.textContent = last30.workout;
+    sa.textContent = last30.art;
+    sr.textContent = last30.read;
+    sstreak.textContent = streak;
+  };
+
+  const setRec = (iso, patch) => {
+    const cur = getRec(store, iso);
+    store.days[iso] = { ...cur, ...patch, updatedAt: Date.now() };
+    render();
+  };
+
+  // events
+  toneBtn.addEventListener("click", () => {
+    store.jasonTone = !store.jasonTone;
+    render();
+  });
+  weekBtn.addEventListener("click", () => {
+    store.weekStartsOnMonday = !store.weekStartsOnMonday;
+    render();
+  });
+  prevMonth.addEventListener("click", () => {
+    viewMonth = startOfMonth(addMonths(viewMonth, -1));
+    render();
+  });
+  thisMonthBtn.addEventListener("click", () => {
+    viewMonth = startOfMonth(new Date());
+    render();
+  });
+  nextMonth.addEventListener("click", () => {
+    viewMonth = startOfMonth(addMonths(viewMonth, 1));
+    render();
+  });
+
+  togWorkout.addEventListener("click", () => {
+    const r = getRec(store, selectedISO);
+    setRec(selectedISO, { workout: !r.workout });
+  });
+  togArt.addEventListener("click", () => {
+    const r = getRec(store, selectedISO);
+    setRec(selectedISO, { art: !r.art });
+  });
+  togRead.addEventListener("click", () => {
+    const r = getRec(store, selectedISO);
+    setRec(selectedISO, { read: !r.read });
+  });
+
+  noteEl.addEventListener("input", (e) => {
+    setRec(selectedISO, { note: e.target.value });
+  });
+
+  resetDayBtn.addEventListener("click", () => {
+    delete store.days[selectedISO];
+    setToast("已清空这一天");
+    render();
+  });
+
+  // first render
+  render();
+})();
+</script>
+</body>
+</html>
