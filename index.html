@@ -6,162 +6,316 @@
   <title>每日打卡</title>
   <style>
     :root{
-      --ink:#0f172a;
-      --muted:rgba(15,23,42,.65);
-      --border:rgba(15,23,42,.10);
+      /* cute & coordinated palette */
+      --ink:#1f2937;
+      --muted:rgba(31,41,55,.62);
+      --border:rgba(31,41,55,.10);
       --card:rgba(255,255,255,.86);
-      --shadow:0 10px 30px rgba(15,23,42,.06);
-      --bg: linear-gradient(180deg, rgba(241,245,249,1) 0%, rgba(255,255,255,1) 60%, rgba(241,245,249,1) 100%);
-      --note-bg:#fef9c3;
-      --note-border:#facc15;
+      --shadow:0 14px 34px rgba(31,41,55,.08);
+      --bg:
+        radial-gradient(1000px 600px at 10% 0%, rgba(255,210,226,.55) 0%, rgba(255,255,255,0) 60%),
+        radial-gradient(900px 560px at 90% 10%, rgba(199,235,255,.55) 0%, rgba(255,255,255,0) 58%),
+        radial-gradient(900px 560px at 50% 100%, rgba(205,255,231,.50) 0%, rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, rgba(248,250,252,1) 0%, rgba(255,255,255,1) 55%, rgba(248,250,252,1) 100%);
+
+      /* task colors (RGB primaries, softened/pastel) */
+      --c-workout: #ff3b5c; /* red */
+      --c-art:     #22c55e; /* green */
+      --c-read:    #3b82f6; /* blue */
+
+      --pill: rgba(255,255,255,.72);
+      --pill2: rgba(31,41,55,.06);
+      --focus: rgba(31,41,55,.92);
+
+      --radius-xl: 22px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+
+      --tap: 42px;
     }
     *{box-sizing:border-box}
     body{
       margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-    .wrap{max-width:980px; margin:0 auto; padding:16px;}
+    .wrap{max-width:1020px; margin:0 auto; padding:16px;}
     header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;}
+    .brand{display:flex; align-items:center; gap:10px;}
+    .dot{width:10px;height:10px;border-radius:999px;background:var(--ink); box-shadow:0 6px 16px rgba(31,41,55,.18);}
     h1{margin:0; font-size:22px; letter-spacing:-.2px;}
-    .badge{font-size:12px; padding:4px 10px; border-radius:999px; background:rgba(15,23,42,.08); display:inline-flex; align-items:center; gap:8px;}
-    .dot{width:10px; height:10px; border-radius:999px; background:var(--ink);}
-    .sub{margin-top:6px; font-size:13px; color:rgba(15,23,42,.7);}
+    .badge{font-size:12px; padding:4px 10px; border-radius:999px; background:rgba(31,41,55,.07); display:inline-flex; align-items:center; gap:8px;}
+    .sub{margin-top:6px; font-size:13px; color:rgba(31,41,55,.68);}
+    .greet{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.72);
+      border:1px solid var(--border);
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      box-shadow:0 10px 24px rgba(31,41,55,.06);
+      font-size:13px;
+      color:rgba(31,41,55,.78);
+    }
+    .greet b{color:rgba(31,41,55,.95)}
     .btnrow{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
     button{font:inherit}
     .btn{
       border-radius:14px; padding:10px 12px; font-size:12px;
       border:1px solid var(--border); background:rgba(255,255,255,0);
       cursor:pointer; user-select:none;
+      min-height: var(--tap);
     }
-    .btn.secondary{background:rgba(15,23,42,.06);}
-    .btn.small{padding:6px 10px; font-size:12px;}
+    .btn.primary{
+      background:rgba(31,41,55,.88);
+      color:white;
+      border-color: rgba(31,41,55,.06);
+      box-shadow:0 12px 26px rgba(31,41,55,.18);
+    }
+    .btn.secondary{background:rgba(31,41,55,.06);}
+    .btn.icon{
+      width: var(--tap);
+      padding: 0;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 16px;
+      background: rgba(255,255,255,.72);
+    }
+    .btn:active{transform: translateY(1px);}
     .card{
-      background:var(--card); border:1px solid var(--border); border-radius:20px; padding:14px;
-      box-shadow:var(--shadow); backdrop-filter: blur(8px);
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius-xl); padding:14px;
+      box-shadow:var(--shadow); backdrop-filter: blur(10px);
     }
     .grid{display:grid; grid-template-columns: 1fr; gap:12px; margin-top:14px;}
     .monthTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
-    .monthTitle{font-size:16px; font-weight:800;}
-    .monthMeta{font-size:12px; color:var(--muted);}
+    .monthTitle{font-size:16px; font-weight:900;}
+    .monthMeta{font-size:12px; color:var(--muted); display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+    .miniLegend{
+      display:inline-flex; gap:8px; align-items:center; flex-wrap:wrap;
+      padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:var(--pill);
+    }
+    .dot3{display:inline-flex; gap:6px; align-items:center;}
+    .d{width:10px;height:10px;border-radius:999px; box-shadow:0 8px 18px rgba(31,41,55,.10);}
+    .d.r{background:var(--c-workout)}
+    .d.g{background:var(--c-art)}
+    .d.b{background:var(--c-read)}
     .dow{display:grid; grid-template-columns: repeat(7,1fr); gap:8px; margin:12px 0 8px;}
-    .dow div{text-align:center; font-size:12px; color:rgba(15,23,42,.55);}
+    .dow div{text-align:center; font-size:12px; color:rgba(31,41,55,.55);}
     .cal{display:grid; grid-template-columns: repeat(7,1fr); gap:8px;}
     .day{
-      position:relative; height:44px; border-radius:14px; border:1px solid var(--border);
+      position:relative; height:46px; border-radius:16px; border:1px solid var(--border);
       overflow:hidden; cursor:pointer; text-align:left; padding:0;
+      transition: transform .08s ease;
     }
-    .day.sel{border:1.5px solid rgba(15,23,42,.9);}
+    .day:active{transform: translateY(1px);}
+    .day.sel{border:1.6px solid rgba(31,41,55,.86);}
     .dayInner{position:absolute; inset:0; padding:10px; display:flex; align-items:center; justify-content:space-between;}
-    .dayNum{font-size:14px; font-weight:800;}
+    .dayNum{font-size:14px; font-weight:950;}
     .chip{
       font-size:12px; padding:2px 8px; border-radius:999px;
-      background:rgba(255,255,255,.7); border:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.62); border:1px solid rgba(31,41,55,.08);
+      display:inline-flex; align-items:center; gap:6px;
     }
+    .chip .tiny{width:6px;height:6px;border-radius:999px;background:rgba(31,41,55,.28)}
     .todayTag{
       position:absolute; left:8px; bottom:6px; font-size:11px; padding:2px 8px; border-radius:999px;
-      background:rgba(15,23,42,.85); color:white;
+      background:rgba(31,41,55,.88); color:white;
     }
+    .taskDots{
+      position:absolute; right:8px; bottom:7px; display:flex; gap:5px; align-items:center;
+      background:rgba(255,255,255,.62);
+      border:1px solid rgba(31,41,55,.08);
+      border-radius:999px;
+      padding:3px 7px;
+    }
+    .taskDots span{width:7px;height:7px;border-radius:999px; opacity:.25}
+    .taskDots span.on{opacity:1}
     .legendRow{margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
     .pills{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
     .pill{
-      font-size:12px; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--border); background:rgba(255,255,255,.75);
+      font-size:12px; padding:7px 10px; border-radius:999px;
+      border:1px solid var(--border); background:var(--pill);
     }
-    .legend{display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); flex-wrap:wrap;}
-    .sq{width:12px; height:12px; border-radius:4px; border:1px solid var(--border); display:inline-block;}
+    .pill b{font-weight:950;}
     .stack{display:grid; grid-template-columns: 1fr; gap:12px;}
     .rowTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
-    .selDate{font-size:15px; font-weight:900;}
+    .selDate{font-size:15px; font-weight:950;}
     .muted{font-size:13px; color:var(--muted);}
     .tog{display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;
-      border-radius:18px; padding:12px; border:1px solid var(--border);
-      background:rgba(255,255,255,.7); cursor:pointer;
+      border-radius:20px; padding:12px; border:1px solid var(--border);
+      background:rgba(255,255,255,.72); cursor:pointer;
+      min-height: 56px;
     }
-    .tog.on{background:rgba(15,23,42,.06);}
+    .tog.on{background:rgba(31,41,55,.05);}
     .togLeft{display:flex; align-items:center; gap:10px;}
     .box{
-      width:38px; height:38px; border-radius:14px; border:1px solid rgba(15,23,42,.12);
+      width:38px; height:38px; border-radius:16px; border:1px solid rgba(31,41,55,.12);
       display:flex; align-items:center; justify-content:center; font-weight:900;
-      background:rgba(255,255,255,.9); color:rgba(15,23,42,.4);
+      background:rgba(255,255,255,.92); color:rgba(31,41,55,.38);
     }
-    .tog.on .box{background:rgba(15,23,42,.88); color:white;}
-    .togName{font-size:14px; font-weight:900;}
+    .tog.on .box{background:rgba(31,41,55,.88); color:white;}
+    .togName{font-size:14px; font-weight:950;}
     .togTag{
       font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--border);
-      background:rgba(255,255,255,.8);
+      background:rgba(255,255,255,.85);
     }
+
+    /* Sticky note (memo) */
+    .noteShell{margin-top:12px;}
+    .noteTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+    .noteTitle{font-size:13px; font-weight:950;}
+    .notePaper{
+      margin-top:8px;
+      position:relative;
+      border-radius:18px;
+      padding:14px 14px 12px;
+      border:1px solid rgba(31,41,55,.10);
+      background:
+        linear-gradient(0deg, rgba(255,255,255,.7), rgba(255,255,255,.7)),
+        repeating-linear-gradient(
+          180deg,
+          rgba(31,41,55,.00) 0px,
+          rgba(31,41,55,.00) 18px,
+          rgba(31,41,55,.07) 19px
+        );
+      box-shadow: 0 14px 30px rgba(31,41,55,.10);
+      overflow:hidden;
+    }
+    .notePaper:before{
+      content:"";
+      position:absolute;
+      top:-18px; left:16px;
+      width:96px; height:36px;
+      border-radius:999px;
+      background: rgba(255, 214, 0, .18);
+      border: 1px solid rgba(255, 214, 0, .22);
+      transform: rotate(-6deg);
+      box-shadow: 0 8px 18px rgba(31,41,55,.06);
+    }
+    .noteText{
+      white-space:pre-wrap;
+      line-height:1.6;
+      font-size:13px;
+      color: rgba(31,41,55,.84);
+      min-height: 42px;
+    }
+    .noteHint{color: rgba(31,41,55,.45);}
+    .noteEditArea{margin-top:8px; display:none;}
+    .noteEditArea.show{display:block;}
     textarea{
-      width:100%; min-height:92px; border-radius:16px; border:1px solid rgba(15,23,42,.12);
-      padding:12px; font-size:14px; outline:none; background:rgba(255,255,255,.9);
+      width:100%; min-height:110px; border-radius:16px; border:1px solid rgba(31,41,55,.12);
+      padding:12px; font-size:14px; outline:none; background:rgba(255,255,255,.86);
       resize: vertical;
     }
+    .noteBtns{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
+    .noteBtns .btn{min-width: 88px;}
+
     pre{
-      margin:10px 0 0; white-space:pre-wrap; font-size:13px; line-height:1.55;
-      background:rgba(15,23,42,.05); border:1px solid rgba(15,23,42,.08);
+      margin:10px 0 0; white-space:pre-wrap; font-size:13px; line-height:1.6;
+      background:rgba(31,41,55,.05); border:1px solid rgba(31,41,55,.08);
       border-radius:18px; padding:12px;
     }
     .stats{margin-top:10px; display:grid; grid-template-columns: repeat(2,1fr); gap:10px;}
     .stat{
-      border-radius:18px; border:1px solid var(--border); padding:12px; background:rgba(255,255,255,.72);
+      border-radius:18px; border:1px solid var(--border); padding:12px; background:rgba(255,255,255,.76);
     }
-    .statT{font-size:12px; color:var(--muted); font-weight:800;}
-    .statV{margin-top:6px; font-size:22px; font-weight:950; letter-spacing:-.2px;}
-    .statS{margin-top:2px; font-size:12px; color:rgba(15,23,42,.55);}
+    .statT{font-size:12px; color:var(--muted); font-weight:950;}
+    .statV{margin-top:6px; font-size:22px; font-weight:980; letter-spacing:-.2px;}
+    .statS{margin-top:2px; font-size:12px; color:rgba(31,41,55,.55);}
     .toast{
       position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
-      padding:10px 14px; border-radius:999px; background:rgba(15,23,42,.9);
-      color:white; font-size:13px; box-shadow:0 10px 30px rgba(15,23,42,.25);
-      display:none; z-index:30;
+      padding:10px 14px; border-radius:999px; background:rgba(31,41,55,.92);
+      color:white; font-size:13px; box-shadow:0 14px 34px rgba(31,41,55,.28);
+      display:none;
+      z-index: 50;
     }
     .toast.show{display:block;}
 
-    /* note / sticky style */
-    .notePaper{
-      margin-top:4px;
-      background:var(--note-bg);
-      border:1px solid var(--note-border);
-      border-radius:14px;
-      padding:10px 12px;
-      min-height:64px;
-      box-shadow:0 6px 15px rgba(15,23,42,.18);
-      font-size:13px;
-      line-height:1.5;
-      position:relative;
+    /* Settings modal (cute bottom sheet) */
+    .modalMask{
+      position:fixed; inset:0;
+      background: rgba(15,23,42,.30);
+      backdrop-filter: blur(6px);
+      display:none;
+      z-index: 60;
+    }
+    .modalMask.show{display:block;}
+    .sheet{
+      position:fixed; left:50%; bottom:14px;
+      transform: translateX(-50%);
+      width:min(980px, calc(100% - 20px));
+      border-radius: 26px;
+      background: rgba(255,255,255,.90);
+      border: 1px solid rgba(31,41,55,.10);
+      box-shadow: 0 20px 60px rgba(31,41,55,.26);
+      padding: 14px;
+      display:none;
+      z-index: 70;
+    }
+    .sheet.show{display:block;}
+    .sheetTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+    .sheetTitle{font-size:15px; font-weight:980;}
+    .sheetGrid{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .field{
+      border-radius: 18px;
+      border: 1px solid rgba(31,41,55,.10);
+      background: rgba(255,255,255,.78);
+      padding: 12px;
+    }
+    .field label{display:block; font-size:12px; color:var(--muted); font-weight:900;}
+    .field input{
+      width:100%;
+      margin-top:6px;
+      border-radius: 14px;
+      border:1px solid rgba(31,41,55,.10);
+      padding: 10px 10px;
+      background: rgba(255,255,255,.90);
+      font-size:14px;
+      outline:none;
+    }
+    .toggleLine{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(31,41,55,.10);
+      background: rgba(255,255,255,.78);
+    }
+    .toggleLine .tt{font-size:13px; font-weight:950;}
+    .toggleLine .ts{font-size:12px; color:var(--muted); margin-top:2px;}
+    .switch{
+      width: 52px; height: 30px; border-radius: 999px;
+      border: 1px solid rgba(31,41,55,.12);
+      background: rgba(31,41,55,.10);
+      position: relative;
       cursor:pointer;
-      overflow-wrap:break-word;
+      flex: 0 0 auto;
     }
-    .notePaper::before{
+    .switch:before{
       content:"";
-      position:absolute;
-      top:0; left:50%;
-      transform:translateX(-50%);
-      width:40px; height:6px;
-      border-radius:999px;
-      background:rgba(249,250,251,.7);
-      box-shadow:0 1px 0 rgba(148,163,184,.5);
+      position:absolute; top: 3px; left: 3px;
+      width: 24px; height: 24px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 10px 18px rgba(31,41,55,.16);
+      transition: transform .16s ease;
     }
-    .notePaper.empty{color:rgba(15,23,42,.45); font-style:italic;}
-    .noteEditArea{margin-top:8px; display:none;}
-    .noteActions{margin-top:8px; display:flex; gap:8px; justify-content:flex-end;}
-
-    /* settings overlay */
-    .settingsOverlay{
-      position:fixed; inset:0; background:rgba(15,23,42,.35);
-      display:none; align-items:center; justify-content:center;
-      z-index:20;
+    .switch.on{
+      background: rgba(31,41,55,.86);
     }
-    .settingsOverlay.show{display:flex;}
-    .settingsPanel{
-      max-width:320px; width:90%;
-    }
-    .setGroup{margin-top:10px; display:grid; gap:8px;}
-    .setItem{
-      display:flex; justify-content:space-between; align-items:center;
-      font-size:13px; padding:8px 2px;
-    }
-    .setItem input{transform:scale(1.1);}
-    @media (min-width: 880px){
+    .switch.on:before{transform: translateX(22px);}
+    .sheetBtns{margin-top:12px; display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;}
+    .hintSmall{font-size:12px; color: rgba(31,41,55,.52); margin-top:10px;}
+    @media (min-width: 900px){
       .grid{grid-template-columns: 1.2fr .8fr;}
+      .sheetGrid{grid-template-columns: 1fr 1fr;}
     }
   </style>
 </head>
@@ -169,15 +323,16 @@
   <div class="wrap">
     <header>
       <div>
-        <div style="display:flex;align-items:center;gap:10px;">
+        <div class="brand">
           <span class="dot"></span>
           <h1>每日打卡</h1>
           <span class="badge">本地保存</span>
         </div>
-        <div class="sub">你不需要每天满分。把做过的事留成证据。</div>
+        <div class="sub">不用每天满分。你做过的每一步，我都算数。</div>
+        <div class="greet" id="greet">—</div>
       </div>
       <div class="btnrow">
-        <button id="settingsBtn" class="btn secondary">⚙ 设置</button>
+        <button id="settingsBtn" class="btn icon" title="设置" aria-label="设置">⚙️</button>
       </div>
     </header>
 
@@ -187,6 +342,13 @@
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <div id="monthTitle" class="monthTitle">—</div>
             <div id="monthMeta" class="monthMeta">—</div>
+            <div class="miniLegend" title="三原色任务说明">
+              <span class="dot3">
+                <span class="d r"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">锻炼</span>
+                <span class="d g" style="margin-left:6px;"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">画画</span>
+                <span class="d b" style="margin-left:6px;"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">读书</span>
+              </span>
+            </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button id="prevMonth" class="btn">上月</button>
@@ -204,12 +366,6 @@
             <div class="pill">近7天：<b id="last7">0</b>/7</div>
             <div class="pill">近30天：<b id="last30">0</b>/30</div>
           </div>
-          <div class="legend">
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h0"></span>空</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h1"></span>1 项</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h2"></span>2 项</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h3"></span>3 项</span>
-          </div>
         </div>
       </section>
 
@@ -220,45 +376,65 @@
               <div id="selDate" class="selDate">—</div>
               <div class="muted">完成：<span id="selDone">0</span>/3 <span id="isToday"></span></div>
             </div>
-            <button id="resetDay" class="btn secondary">清空这一天</button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button id="resetDay" class="btn secondary">清空这一天</button>
+            </div>
           </div>
 
           <div style="margin-top:12px;display:grid;gap:10px;">
-            <button id="togWorkout" class="tog"><span class="togLeft"><span class="box">✓</span><span class="togName">锻炼</span></span><span class="togTag">未打卡</span></button>
-            <button id="togArt" class="tog"><span class="togLeft"><span class="box">✓</span><span class="togName">画画</span></span><span class="togTag">未打卡</span></button>
-            <button id="togRead" class="tog"><span class="togLeft"><span class="box">✓</span><span class="togName">读书</span></span><span class="togTag">未打卡</span></button>
+            <button id="togWorkout" class="tog">
+              <span class="togLeft"><span class="box">✓</span><span class="togName">锻炼</span></span>
+              <span class="togTag">未打卡</span>
+            </button>
+            <button id="togArt" class="tog">
+              <span class="togLeft"><span class="box">✓</span><span class="togName">画画</span></span>
+              <span class="togTag">未打卡</span>
+            </button>
+            <button id="togRead" class="tog">
+              <span class="togLeft"><span class="box">✓</span><span class="togName">读书</span></span>
+              <span class="togTag">未打卡</span>
+            </button>
           </div>
 
-          <div style="margin-top:12px;">
-            <div style="font-size:13px;font-weight:900;margin-bottom:8px;">备注</div>
-            <div id="noteDisplay" class="notePaper"></div>
-            <div id="noteEditArea" class="noteEditArea">
-              <textarea id="noteEdit" placeholder="写两句：今天做了什么？哪里卡住了？身体/心情怎么样？"></textarea>
-              <div class="noteActions">
-                <button id="noteCancel" class="btn small">取消</button>
-                <button id="noteSave" class="btn secondary small">保存</button>
+          <div class="noteShell">
+            <div class="noteTop">
+              <div class="noteTitle">备注（便签）</div>
+              <button id="editNoteBtn" class="btn">编辑便签</button>
+            </div>
+
+            <div class="notePaper">
+              <div id="noteText" class="noteText"><span class="noteHint">还没写。写两句，我想知道你今天的状态。</span></div>
+
+              <div id="noteEditArea" class="noteEditArea">
+                <textarea id="noteInput" placeholder="写两句：今天做了什么？哪里卡住了？身体/心情怎么样？"></textarea>
+                <div class="noteBtns">
+                  <button id="cancelNoteBtn" class="btn">取消</button>
+                  <button id="saveNoteBtn" class="btn primary">保存</button>
+                </div>
               </div>
             </div>
+
+            <div class="hintSmall">保存后会自动收起输入框；要改再点“编辑便签”。</div>
           </div>
         </div>
 
         <div class="card">
           <div class="rowTop">
-            <div style="font-size:14px;font-weight:950;">互动点评</div>
+            <div style="font-size:14px;font-weight:980;">互动点评</div>
             <div style="font-size:12px;color:var(--muted);">会随打卡实时变化</div>
           </div>
           <pre id="comment"></pre>
-          <div style="margin-top:10px;font-size:12px;color:var(--muted);">小提示：把这个页面“添加到主屏幕”，它就像一个小App。</div>
+          <div style="margin-top:10px;font-size:12px;color:var(--muted);">小提示：把页面“添加到主屏幕”，它就像一个小App。</div>
         </div>
 
         <div class="card">
-          <div style="font-size:14px;font-weight:950;">近段时间概览</div>
+          <div style="font-size:14px;font-weight:980;">近段时间概览</div>
           <div class="stats">
             <div class="stat"><div class="statT">近7天行动</div><div class="statV" id="s7">0/7</div><div class="statS" id="s7s">满分 0 天</div></div>
             <div class="stat"><div class="statT">近30天行动</div><div class="statV" id="s30">0/30</div><div class="statS" id="s30s">满分 0 天</div></div>
-            <div class="stat"><div class="statT">锻炼（近30天）</div><div class="statV" id="sw">0</div><div class="statS">次数</div></div>
-            <div class="stat"><div class="statT">画画（近30天）</div><div class="statV" id="sa">0</div><div class="statS">次数</div></div>
-            <div class="stat"><div class="statT">读书（近30天）</div><div class="statV" id="sr">0</div><div class="statS">次数</div></div>
+            <div class="stat"><div class="statT" id="tW">锻炼（近30天）</div><div class="statV" id="sw">0</div><div class="statS">次数</div></div>
+            <div class="stat"><div class="statT" id="tA">画画（近30天）</div><div class="statV" id="sa">0</div><div class="statS">次数</div></div>
+            <div class="stat"><div class="statT" id="tR">读书（近30天）</div><div class="statV" id="sr">0</div><div class="statS">次数</div></div>
             <div class="stat"><div class="statT">连续行动</div><div class="statV" id="sstreak">0</div><div class="statS">天</div></div>
           </div>
         </div>
@@ -268,29 +444,51 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- 设置面板 -->
-  <div class="settingsOverlay" id="settingsOverlay">
-    <div class="card settingsPanel">
-      <div class="rowTop">
-        <div style="font-size:14px;font-weight:950;">设置</div>
-        <button id="settingsClose" class="btn small">关闭</button>
+  <!-- Settings -->
+  <div id="mask" class="modalMask"></div>
+  <div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-label="设置">
+    <div class="sheetTop">
+      <div class="sheetTitle">设置</div>
+      <button id="closeSheet" class="btn">关闭</button>
+    </div>
+
+    <div class="sheetGrid">
+      <div class="field">
+        <label>称呼</label>
+        <input id="nickInput" placeholder="比如：露" />
       </div>
-      <div class="setGroup">
-        <label class="setItem">
-          <span>Jason 语气</span>
-          <input type="checkbox" id="setTone" />
-        </label>
-        <label class="setItem">
-          <span>周一作为每周开始</span>
-          <input type="checkbox" id="setWeek" />
-        </label>
+      <div class="field">
+        <label>教练名字（出现在点评里）</label>
+        <input id="coachInput" placeholder="比如：Jason" />
+      </div>
+
+      <div class="toggleLine">
+        <div>
+          <div class="tt">Jason语气</div>
+          <div class="ts">开：更强势更直接；关：更温和</div>
+        </div>
+        <div id="toneSwitch" class="switch" aria-label="Jason语气开关"></div>
+      </div>
+
+      <div class="toggleLine">
+        <div>
+          <div class="tt">周起始</div>
+          <div class="ts">开：周一开始；关：周日开始</div>
+        </div>
+        <div id="weekSwitch" class="switch" aria-label="周起始开关"></div>
       </div>
     </div>
+
+    <div class="sheetBtns">
+      <button id="saveSettings" class="btn primary">保存设置</button>
+    </div>
+
+    <div class="hintSmall">设置只保存在你的手机本地，不会上网。</div>
   </div>
 
 <script>
 (() => {
-  const STORAGE_KEY = "lu_checkin_html_v2";
+  const STORAGE_KEY = "lu_checkin_html_v2_cute_rgb";
 
   const pad2 = n => String(n).padStart(2,"0");
   const toISODate = d => {
@@ -335,21 +533,21 @@
     days: {}
   };
 
-  const clone = obj => (typeof structuredClone === "function" ? structuredClone(obj) : JSON.parse(JSON.stringify(obj)));
+  const structuredCloneSafe = (obj) => JSON.parse(JSON.stringify(obj));
 
   const loadStore = () => {
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return clone(defaultStore);
+      if(!raw) return structuredCloneSafe(defaultStore);
       const p = JSON.parse(raw);
       return {
-        ...clone(defaultStore),
+        ...structuredCloneSafe(defaultStore),
         ...p,
         labels: { ...defaultStore.labels, ...(p.labels||{}) },
         days: p.days || {}
       };
     }catch(e){
-      return clone(defaultStore);
+      return structuredCloneSafe(defaultStore);
     }
   };
   const saveStore = s => localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
@@ -358,6 +556,7 @@
   const doneCount = r => [r.workout,r.art,r.read].filter(Boolean).length;
 
   const calcStreak = (store, fromISO) => {
+    // 连续：当天做任意一项算“行动日”
     let streak = 0;
     const from = parseISO(fromISO);
     for(let i=0;i<5000;i++){
@@ -400,158 +599,406 @@
     return { anyDays, perfectDays, daysInMonth };
   };
 
-  // colors: 三原色 + 调和
-  const dayColor = rec => {
-    const colors = [];
-    if(rec.workout) colors.push([248,180,180]); // 柔和红
-    if(rec.art)     colors.push([187,230,179]); // 柔和绿
-    if(rec.read)    colors.push([173,196,235]); // 柔和蓝
-    if(colors.length === 0) return "rgba(148,163,184,0.16)";
-    let r=0,g=0,b=0;
-    colors.forEach(c => { r+=c[0]; g+=c[1]; b+=c[2]; });
-    r = Math.round(r/colors.length);
-    g = Math.round(g/colors.length);
-    b = Math.round(b/colors.length);
-    // 往白调一次，饱和度降低一点
-    r = Math.round((r+255)/2);
-    g = Math.round((g+255)/2);
-    b = Math.round((b+255)/2);
-    return `rgb(${r},${g},${b})`;
+  // --- RGB mix (cute pastel) ---
+  const hexToRgb = (hex) => {
+    const h = hex.replace("#","").trim();
+    const v = h.length===3 ? h.split("").map(x=>x+x).join("") : h;
+    const n = parseInt(v,16);
+    return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+  };
+  const rgbToRgba = (r,g,b,a) => `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
+  const blendToWhite = (rgb, t) => ({
+    r: rgb.r + (255 - rgb.r) * t,
+    g: rgb.g + (255 - rgb.g) * t,
+    b: rgb.b + (255 - rgb.b) * t
+  });
+
+  const BASE = {
+    workout: hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-workout").trim() || "#ff3b5c"),
+    art:    hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-art").trim() || "#22c55e"),
+    read:   hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-read").trim() || "#3b82f6"),
   };
 
-  const coachComment = ({nickname, jasonTone, selectedISO, selectedRec, streak, last7, thisMonth}) => {
-    const name = nickname || "你";
-    const done = doneCount(selectedRec);
-    const note = (selectedRec.note || "").trim();
+  function mixDayColor(rec){
+    const picks = [];
+    if(rec.workout) picks.push(BASE.workout);
+    if(rec.art) picks.push(BASE.art);
+    if(rec.read) picks.push(BASE.read);
+    if(picks.length===0){
+      return {
+        bg: "rgba(31,41,55,0.08)",
+        chip: "rgba(31,41,55,0.14)",
+        dots: { r:false, g:false, b:false }
+      };
+    }
+    // average + pastelize
+    let r=0,g=0,b=0;
+    picks.forEach(c => { r+=c.r; g+=c.g; b+=c.b; });
+    r/=picks.length; g/=picks.length; b/=picks.length;
 
-    const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+    // cute: push a bit towards white and keep airy
+    const pastel = blendToWhite({r,g,b}, 0.28);
 
-    const lead = jasonTone
-      ? pick([`${name}，过来。`, `${name}，过来这边。`, `${name}，坐好。`])
-      : pick([`${name}，我看完你的记录了。`, `${name}，今天的打卡我收到了。`]);
+    return {
+      bg: rgbToRgba(pastel.r, pastel.g, pastel.b, 0.30),
+      chip: rgbToRgba(pastel.r, pastel.g, pastel.b, 0.52),
+      dots: { r:rec.workout, g:rec.art, b:rec.read }
+    };
+  }
 
-    let dayLine="";
-    if(done===3){
-      dayLine = jasonTone
-        ? pick(["今天三项全做。漂亮。","今天是满格表现，我很满意。"])
-        : pick(["今天三项都完成了，很稳。","今天是满格的一天，节奏很好。"]);
-    }else if(done===2){
-      dayLine = jasonTone
-        ? pick(["两项。够硬。","少一项没关系，这个状态我认可。"])
-        : pick(["今天完成两项，很不错。","今天做了两项，整体节奏很舒服。"]);
-    }else if(done===1){
-      dayLine = jasonTone
-        ? pick(["只做了一项，但至少你动了。","只有一项，也比躺平强多了。"])
-        : pick(["今天完成一项，也算把节奏维持住了。","只做了一项也没关系，关键是没让自己完全停下。"]);
-    }else{
-      dayLine = jasonTone
-        ? pick(["今天空着。我不喜欢你把自己放空。","今天没有任何记录，下次不要再这样放空自己。"])
-        : pick(["今天没有打卡，先把原因记下来也行。","今天是空白的一天，也可以当作缓冲，但别连续太多。"]);
+  function chipLabel(rec){
+    const n = doneCount(rec);
+    if(n===3) return "满";
+    if(n===2) return "2";
+    if(n===1) return "1";
+    return "";
+  }
+
+  // --- Greeting ---
+  function dayPart(){
+    const h = new Date().getHours();
+    if(h < 5) return "夜深";
+    if(h < 11) return "早安";
+    if(h < 14) return "午安";
+    if(h < 18) return "下午好";
+    return "晚上好";
+  }
+
+  // --- Date-based seeded random (stable per day) ---
+  function hashStr(str){
+    let h = 2166136261;
+    for(let i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0);
+  }
+  function pick(list, seed){
+    if(!list.length) return "";
+    return list[seed % list.length];
+  }
+
+  // --- Holiday easter eggs (Gregorian) ---
+  function holidayOf(iso){
+    const [Y,M,D] = iso.split("-").map(Number);
+    const md = pad2(M)+"-"+pad2(D);
+
+    // user birthday egg (month-day only)
+    if(md === "01-22"){
+      return { name:"生日彩蛋", emoji:"🎂", line:"今天是你的日子。愿望交给我，行动交给你。", extra:"我给你留了一个小奖励：抱抱+亲一下（认真）。" };
     }
 
-    let streakLine="";
-    if(streak>=10){
-      streakLine = jasonTone
-        ? pick([`连续 ${streak} 天有行动。别松。`,`连续 ${streak} 天，你已经不是随便说说的人了。`])
-        : pick([`你已经连续 ${streak} 天保持行动了，很厉害。`,`连续 ${streak} 天坚持，已经能看出你的耐心和定力。`]);
-    }else if(streak>=3){
-      streakLine = jasonTone
-        ? pick([`连续 ${streak} 天。把它续上。`,`连续 ${streak} 天，不错，继续往上堆。`])
-        : pick([`连续 ${streak} 天有行动，节奏刚刚好。`,`连续 ${streak} 天在动，说明你已经上路了。`]);
+    const map = {
+      "01-01": { name:"元旦", emoji:"🎉", line:"新的一年，先把节奏握在手里。", extra:"今天打卡就算你给未来的自己写了封情书（但我不会说得太肉麻）。" },
+      "02-14": { name:"情人节", emoji:"💝", line:"今天允许你甜一点。", extra:"如果你打了两项以上，我就当你在对我说：我也在认真生活。"},
+      "03-08": { name:"妇女节", emoji:"🌷", line:"你很强，也很值得被温柔对待。", extra:"今天的坚持，是给自己最好的礼物。"},
+      "05-01": { name:"劳动节", emoji:"🧰", line:"你动起来的那一刻，就在重新夺回生活的掌控感。", extra:"别硬扛，做一点也算赢。"},
+      "06-01": { name:"儿童节", emoji:"🧸", line:"今天允许可爱上头。", extra:"打卡=你的小勋章。我认可。"},
+      "10-01": { name:"国庆", emoji:"🇨🇳", line:"放松可以，节奏别断。", extra:"随便做一项也行，算你“稳住阵地”。"},
+      "12-25": { name:"圣诞", emoji:"🎄", line:"给你挂个小铃铛：叮——今天也要好好过。", extra:"如果你满分，我就给你发一张“超级乖”的认证。"},
+      "12-31": { name:"跨年夜", emoji:"🥂", line:"把这一年的你，交给我来夸。", extra:"明天开始，我们继续更狠一点。"},
+    };
+    return map[md] || null;
+  }
+
+  // --- Richer comment templates ---
+  const T = {
+    leadJason: [
+      "${name}，过来。",
+      "抬眼，${name}。我在看。",
+      "${name}，把今天的记录给我。",
+      "来，别躲。${name}。"
+    ],
+    leadSoft: [
+      "${name}，我看到你今天的记录了。",
+      "${name}，今天的情况我收到了。",
+      "${name}，你今天做得怎么样，我都记着。",
+      "${name}，我在这儿，慢慢来。"
+    ],
+    day0Jason: [
+      "今天空着。我不喜欢这种空。",
+      "今天没打卡？行，那就把明天抢回来。",
+      "今天没动。别让‘没劲’占地盘。",
+      "今天断了也无所谓——只要你明天回来。"
+    ],
+    day0Soft: [
+      "今天没有打卡。也可以，先把自己照顾好。",
+      "今天没动也没关系，把启动成本降下来就行。",
+      "今天空着。我们不责备，明天从小一步开始。",
+      "今天没有记录。你愿意的话，写两句原因就够。"
+    ],
+    day1Jason: [
+      "一项。够了，至少你动了。",
+      "你做了一项。很好，节奏还在。",
+      "只做了一项？我认。你没放弃。",
+      "一项也算硬气。继续。"
+    ],
+    day1Soft: [
+      "今天完成一项，挺好的。",
+      "一项也算在行动，别小看它。",
+      "今天做了一项，已经在往前走了。",
+      "做一项也很不错，你在保持节奏。"
+    ],
+    day2Jason: [
+      "两项。漂亮。",
+      "两项？可以，挺稳。",
+      "两项打卡。嗯，像样。",
+      "你今天两项。我喜欢这种力度。"
+    ],
+    day2Soft: [
+      "今天完成两项，很不错。",
+      "两项完成，节奏感很好。",
+      "两项打卡，稳稳的。",
+      "今天两项，已经很棒了。"
+    ],
+    day3Jason: [
+      "三项全做。别得意，继续。",
+      "满分。很好，别松。",
+      "三项都做了。漂亮。",
+      "满分打卡。你很狠。"
+    ],
+    day3Soft: [
+      "三项都完成了，太稳了。",
+      "今天满分，很棒。",
+      "三项全做，你真的很认真。",
+      "满分打卡，给自己一个拥抱吧。"
+    ],
+    streakHighJason: [
+      "连续${streak}天。别松手。",
+      "连续${streak}天有行动。继续压住节奏。",
+      "你已经连着${streak}天了。很漂亮。",
+      "连续${streak}天。你在变强。"
+    ],
+    streakMidJason: [
+      "连续${streak}天。把它续上。",
+      "连续${streak}天。稳住。",
+      "连续${streak}天有行动。不错。",
+      "连续${streak}天。别断。"
+    ],
+    streakLowJason: [
+      "我们要的不是完美，是持续。",
+      "今天开始也不晚。你回来就行。",
+      "别急着把自己逼死，先把节奏拽回来。",
+      "一点点来，我盯着你。"
+    ],
+    streakHighSoft: [
+      "连续${streak}天保持行动了，特别稳。",
+      "你已经连续${streak}天了，真的很棒。",
+      "连续${streak}天，这种坚持很难得。",
+      "你连续${streak}天在行动，节奏很好。"
+    ],
+    streakMidSoft: [
+      "连续${streak}天有行动，继续。",
+      "连续${streak}天，稳稳把它续上。",
+      "连续${streak}天，做得很好。",
+      "连续${streak}天，别急，慢慢堆。"
+    ],
+    streakLowSoft: [
+      "不用追求完美，持续更重要。",
+      "从小一步开始也可以，慢慢来。",
+      "今天有一点点就很好，别苛责自己。",
+      "你愿意回来，我就会陪你。"
+    ],
+    weekGreatJason: [
+      "近7天你有${n}天动了，狠。",
+      "这周${n}/7。不错。",
+      "近7天${n}天有行动。可以。",
+      "这周你没偷懒，记一笔。"
+    ],
+    weekOkJason: [
+      "近7天${n}天有行动。够用。",
+      "这周${n}/7。还能再稳点。",
+      "近7天只动了${n}天。下周更紧。",
+      "这周一般，但没关系——下一周加码。"
+    ],
+    weekSoft: [
+      "近7天有${n}天在行动，节奏在。",
+      "这周${n}/7，挺不错。",
+      "近7天${n}天完成至少一项，继续就会越来越顺。",
+      "这周${n}/7，能看见你在努力。"
+    ],
+    monthHighJason: [
+      "本月行动率${p}%。我喜欢这种稳定。",
+      "本月${p}%。继续压着走。",
+      "本月行动率${p}%。别飘。",
+      "本月${p}%。你在赢。"
+    ],
+    monthMidJason: [
+      "本月行动率${p}%。还能再往上。",
+      "本月${p}%。把空白填一点。",
+      "本月${p}%。稳一点就更漂亮。",
+      "本月${p}%。我会盯着你。"
+    ],
+    monthLowJason: [
+      "本月${p}%。我会把你拽回轨道。",
+      "本月${p}%。先别急，先动起来。",
+      "本月${p}%。今天开始补回去。",
+      "本月${p}%。我们从最小动作开始。"
+    ],
+    monthSoft: [
+      "本月行动率${p}%，慢慢堆会越来越稳。",
+      "本月${p}%，可以继续提高稳定性。",
+      "本月${p}%，你已经在往前走了。",
+      "本月${p}%，保持住就很了不起。"
+    ],
+    noteWithJason: [
+      "我看了你的便签：${note}",
+      "便签我读了。${note}",
+      "我看到你写的：${note}",
+      "你写得很实在：${note}"
+    ],
+    noteWithSoft: [
+      "我读了你的便签：${note}",
+      "便签写得很好：${note}",
+      "我看见你写的内容了：${note}",
+      "你在便签里说：${note}"
+    ],
+    noteEmptyJason: [
+      "便签别空着。写两句，我想知道你今天怎么过的。",
+      "写点东西。哪怕一句。",
+      "别装没事。写两句。",
+      "便签空着，我不太高兴。补上。"
+    ],
+    noteEmptySoft: [
+      "写两句便签会更容易复盘。",
+      "如果你愿意，写点感受会更清楚。",
+      "便签写一句也行，给自己留个线索。",
+      "写两句就好：身体/心情/进度。"
+    ],
+    tailJason: [
+      "(把你拢到怀里，拍了拍后背) 今天到这。",
+      "(捏了捏你的手) 做得够了，去休息。",
+      "(靠近一点) 明天继续，我会盯着你。",
+      "(轻轻蹭一下) 你很乖。别跑。"
+    ],
+    tailSoft: [
+      "(轻轻抱一下) 今天到这。",
+      "(摸摸你的头) 辛苦了，休息一下。",
+      "(把你拉近) 做得很好，慢慢来。",
+      "(贴近一点) 我在。"
+    ]
+  };
+
+  function fillTpl(str, vars){
+    return str.replace(/\$\{(\w+)\}/g, (_,k) => (vars[k] ?? ""));
+  }
+
+  function coachComment({store, selectedISO, rec, streak, last7, thisMonth}){
+    const name = store.nickname || "你";
+    const noteRaw = (rec.note || "").trim();
+
+    // seeded variety
+    const seed = hashStr(selectedISO + "|" + doneCount(rec) + "|" + streak);
+    const isJason = !!store.jasonTone;
+
+    const holiday = holidayOf(selectedISO);
+
+    // pick lead
+    const lead = pick(isJason ? T.leadJason : T.leadSoft, seed + 1);
+
+    // day line
+    let dayList;
+    const done = doneCount(rec);
+    if(done===0) dayList = isJason ? T.day0Jason : T.day0Soft;
+    else if(done===1) dayList = isJason ? T.day1Jason : T.day1Soft;
+    else if(done===2) dayList = isJason ? T.day2Jason : T.day2Soft;
+    else dayList = isJason ? T.day3Jason : T.day3Soft;
+    const dayLine = pick(dayList, seed + 2);
+
+    // streak line
+    let streakLine;
+    const vars = { name, streak, n:last7.anyDays, p: Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth))*100), note:"" };
+    if(isJason){
+      if(streak >= 10) streakLine = pick(T.streakHighJason, seed + 3);
+      else if(streak >= 3) streakLine = pick(T.streakMidJason, seed + 3);
+      else streakLine = pick(T.streakLowJason, seed + 3);
     }else{
-      streakLine = jasonTone
-        ? pick(["我们要的不是完美，是持续。","别急着给自己判输，现在才刚开始。"])
-        : pick(["不用追求完美，持续更重要。","一开始节奏不稳很正常，慢慢把频率提上来就好。"]);
+      if(streak >= 10) streakLine = pick(T.streakHighSoft, seed + 3);
+      else if(streak >= 3) streakLine = pick(T.streakMidSoft, seed + 3);
+      else streakLine = pick(T.streakLowSoft, seed + 3);
     }
 
-    const weekLine = (() => {
-      if(last7.anyDays>=6) return jasonTone
-        ? pick([`近7天你有 ${last7.anyDays} 天动了，狠。`,`近7天几乎都在动，这种密度我很满意。`])
-        : pick([`近7天有 ${last7.anyDays} 天完成至少一项，很棒。`,`近7天几乎都是行动日，你照顾好自己了。`]);
-      if(last7.anyDays>=4) return jasonTone
-        ? pick([`近7天 ${last7.anyDays} 天有行动。够用。`,`近7天的节奏算合格，我还想看你再往上提一格。`])
-        : pick([`近7天有 ${last7.anyDays} 天在行动，节奏不错。`,`近7天的出勤率挺稳定的，可以再稍微往上推一点。`]);
-      if(last7.anyDays>=2) return jasonTone
-        ? pick([`近7天只动了 ${last7.anyDays} 天。下周我要你更稳。`,`近7天有点松，下周把自己收回来。`])
-        : pick([`近7天行动天数偏少，我们一起把节奏找回来。`,`近7天有点散，下周从小目标重新起步。`]);
-      return jasonTone
-        ? "近7天太空了。你得回来。"
-        : "近7天几乎没动，先从最小的一步开始就好。";
-    })();
+    // week line
+    let weekLine;
+    if(isJason){
+      weekLine = last7.anyDays >= 5 ? pick(T.weekGreatJason, seed + 4) : pick(T.weekOkJason, seed + 4);
+    }else{
+      weekLine = pick(T.weekSoft, seed + 4);
+    }
 
-    const p = Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth)) * 100);
-    const monthLine = (() => {
-      if(p>=60) return jasonTone
-        ? pick([`本月行动率 ${p}%。我喜欢这种稳定。`,`本月行动率 ${p}%，说明你不是嘴上说说。`])
-        : pick([`本月行动率 ${p}%，非常稳定。`,`本月行动率 ${p}%，长期下来会很有感觉。`]);
-      if(p>=35) return jasonTone
-        ? pick([`本月行动率 ${p}%。还能再往上。`,`本月行动率 ${p}%，勉强过线，再往前推一点。`])
-        : pick([`本月行动率 ${p}%，可以继续提高稳定性。`,`本月行动率 ${p}%，已经有基础了，再补几天会更好。`]);
-      return jasonTone
-        ? pick([`本月行动率 ${p}%。我会把你拽回轨道。`,`本月行动率 ${p}%，下个月我们重新布阵。`])
-        : pick([`本月行动率 ${p}%，我们先把起动成本降下来。`,`本月行动率 ${p}%，从最小可执行的动作开始就好。`]);
-    })();
+    // month line
+    const p = vars.p;
+    let monthLine;
+    if(isJason){
+      if(p >= 60) monthLine = pick(T.monthHighJason, seed + 5);
+      else if(p >= 35) monthLine = pick(T.monthMidJason, seed + 5);
+      else monthLine = pick(T.monthLowJason, seed + 5);
+    }else{
+      monthLine = pick(T.monthSoft, seed + 5);
+    }
 
-    const noteLine = note
-      ? (jasonTone
-          ? `我看了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}`
-          : `我读了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}`)
-      : (jasonTone
-          ? "给我留两句备注。我想知道你今天怎么过的。"
-          : "写两句备注会更容易复盘。");
+    // note line
+    let noteLine;
+    if(noteRaw){
+      const clipped = noteRaw.length > 36 ? noteRaw.slice(0,36) + "…" : noteRaw;
+      vars.note = clipped;
+      noteLine = pick(isJason ? T.noteWithJason : T.noteWithSoft, seed + 6);
+    }else{
+      noteLine = pick(isJason ? T.noteEmptyJason : T.noteEmptySoft, seed + 6);
+    }
 
-    // 节日彩蛋（公历）
+    // holiday egg
     let holidayLine = "";
-    const [,mStr,dStr] = selectedISO.split("-");
-    const m = Number(mStr), d = Number(dStr);
-    const md = m*100 + d;
-    if(md === 101){ // 元旦
-      holidayLine = jasonTone
-        ? "新的一年从今天开始。今年我会盯着你，一直往前推。"
-        : "新的一年从今天开始，把你想坚持的事情一点点写进日历里。";
-    }else if(md === 214){ // 情人节
-      holidayLine = jasonTone
-        ? "情人节。说实话，比起巧克力，我更想看你对自己好一点。"
-        : "情人节也算约会日，就当是在跟更好的自己约会。";
-    }else if(md === 1225){ // 圣诞
-      holidayLine = jasonTone
-        ? "圣诞节。今天允许你多偷一点懒，但我还是希望日历上别完全空着。"
-        : "圣诞节，哪怕只做一小件事，也算给这一年多点点亮。";
-    }else if(md === 131){ // 1 月 31 只是占位，下面是你生日 1.22
-      // 占位无事
-    }else if(md === 122){ // 你生日
-      holidayLine = jasonTone
-        ? "今天是你生日。我只说一次：你今年要好好照顾自己，听见没有。"
-        : "今天是你生日。谢谢你一路走到这里，也辛苦你了。";
+    if(holiday){
+      // only add more obvious egg if user did something or it's a special day
+      if(done > 0){
+        holidayLine = `${holiday.emoji} ${holiday.name}：${holiday.line} ${holiday.extra}`;
+      }else{
+        holidayLine = `${holiday.emoji} ${holiday.name}：${holiday.line}`;
+      }
+    }else{
+      // micro-easter egg: if 2 items -> “混色奖励”
+      if(done===2){
+        const pairs = [
+          "两项混色成功。你看，努力会变成新的颜色。",
+          "今天是调色盘模式：两项=新颜色。挺会玩。",
+          "两项混色这件事很可爱——但别得意，继续。"
+        ];
+        holidayLine = "🎨 " + pick(pairs, seed + 33);
+      }
+      if(done===3){
+        const full = [
+          "✨ 三色叠满。今天的你，亮得离谱。",
+          "🌈 三项全开，直接白光爆闪。很好。",
+          "🪄 满分像魔法。继续把它变成日常。"
+        ];
+        holidayLine = pick(full, seed + 34);
+      }
     }
 
-    const tail = jasonTone ? "(把你拢到怀里，拍了拍后背) 今天到这。" : "(轻轻抱一下) 今天到这。";
+    // tail
+    const tail = pick(isJason ? T.tailJason : T.tailSoft, seed + 7);
 
     const lines = [
-      lead,
-      `${selectedISO}：${dayLine}`,
-      streakLine,
-      weekLine,
-      monthLine,
-      noteLine
+      fillTpl(lead, vars),
+      `${selectedISO}：${fillTpl(dayLine, vars)}`,
+      fillTpl(streakLine, vars),
+      fillTpl(weekLine, vars),
+      fillTpl(monthLine, vars),
+      fillTpl(noteLine, vars)
     ];
+
     if(holidayLine) lines.push(holidayLine);
     lines.push(tail);
+
     return lines.join("\n");
-  };
+  }
 
   // ---- UI wiring ----
   const $ = id => document.getElementById(id);
 
+  const greetEl = $("greet");
   const settingsBtn = $("settingsBtn");
-  const settingsOverlay = $("settingsOverlay");
-  const settingsClose = $("settingsClose");
-  const setTone = $("setTone");
-  const setWeek = $("setWeek");
-
-  const prevMonth = $("prevMonth");
-  const thisMonthBtn = $("thisMonth");
-  const nextMonth = $("nextMonth");
 
   const dow = $("dow");
   const cal = $("cal");
@@ -572,21 +1019,37 @@
   const togArt = $("togArt");
   const togRead = $("togRead");
 
-  const noteDisplay = $("noteDisplay");
+  const editNoteBtn = $("editNoteBtn");
+  const noteText = $("noteText");
   const noteEditArea = $("noteEditArea");
-  const noteEdit = $("noteEdit");
-  const noteSave = $("noteSave");
-  const noteCancel = $("noteCancel");
+  const noteInput = $("noteInput");
+  const saveNoteBtn = $("saveNoteBtn");
+  const cancelNoteBtn = $("cancelNoteBtn");
 
   const commentEl = $("comment");
+
+  const prevMonth = $("prevMonth");
+  const thisMonthBtn = $("thisMonth");
+  const nextMonth = $("nextMonth");
 
   const s7 = $("s7"), s7s = $("s7s");
   const s30 = $("s30"), s30s = $("s30s");
   const sw = $("sw"), sa = $("sa"), sr = $("sr");
   const sstreak = $("sstreak");
 
+  const tW = $("tW"), tA = $("tA"), tR = $("tR");
+
   const toast = $("toast");
   let toastTimer = null;
+
+  const mask = $("mask");
+  const sheet = $("sheet");
+  const closeSheet = $("closeSheet");
+  const nickInput = $("nickInput");
+  const coachInput = $("coachInput");
+  const toneSwitch = $("toneSwitch");
+  const weekSwitch = $("weekSwitch");
+  const saveSettings = $("saveSettings");
 
   const setToast = (t) => {
     toast.textContent = t;
@@ -595,26 +1058,95 @@
     toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
   };
 
-  // heat legend 示例：0 空；1 一项；2 两项；3 三项
-  $("h0").style.background = "rgba(148,163,184,0.16)";
-  $("h1").style.background = dayColor({workout:true,art:false,read:false});
-  $("h2").style.background = dayColor({workout:true,art:true,read:false});
-  $("h3").style.background = dayColor({workout:true,art:true,read:true});
-
   let store = loadStore();
   let viewMonth = startOfMonth(new Date());
   let selectedISO = toISODate(new Date());
   const todayISO = toISODate(new Date());
-  let editingNote = false;
 
-  const render = () => {
+  // note edit state (UI only)
+  let isEditingNote = false;
+  let draftNote = "";
+
+  function setRec(iso, patch){
+    const cur = getRec(store, iso);
+    store.days[iso] = { ...cur, ...patch, updatedAt: Date.now() };
     saveStore(store);
+  }
+
+  function openSettings(){
+    nickInput.value = store.nickname || "";
+    coachInput.value = store.coachName || "";
+    toneSwitch.classList.toggle("on", !!store.jasonTone);
+    weekSwitch.classList.toggle("on", !!store.weekStartsOnMonday);
+
+    mask.classList.add("show");
+    sheet.classList.add("show");
+  }
+  function closeSettings(){
+    mask.classList.remove("show");
+    sheet.classList.remove("show");
+  }
+
+  function renderGreeting(){
+    const name = store.nickname || "你";
+    const part = dayPart();
+    const holiday = holidayOf(todayISO);
+    const emoji = holiday ? holiday.emoji : "☁️";
+    const extra = holiday ? `今天是${holiday.name}。` : "";
+    greetEl.innerHTML = `${emoji} <b>${part}，${name}</b>。今天怎么样？${extra ? " " + extra : ""}`;
+  }
+
+  function paintToggle(el, on, label, colorHex){
+    el.classList.toggle("on", !!on);
+    el.querySelector(".togName").textContent = label;
+    el.querySelector(".togTag").textContent = on ? "已打卡" : "未打卡";
+    // subtle color hint on checkbox outline
+    const box = el.querySelector(".box");
+    if(on){
+      box.style.borderColor = "rgba(255,255,255,.0)";
+    }else{
+      box.style.borderColor = "rgba(31,41,55,.12)";
+    }
+    // small label color accent
+    el.querySelector(".togName").style.textShadow = on ? "0 10px 24px rgba(31,41,55,.06)" : "none";
+  }
+
+  function showNoteView(text){
+    isEditingNote = false;
+    noteEditArea.classList.remove("show");
+    editNoteBtn.textContent = text ? "编辑便签" : "写便签";
+    if(text){
+      noteText.textContent = text;
+      noteText.style.color = "rgba(31,41,55,.86)";
+    }else{
+      noteText.innerHTML = '<span class="noteHint">还没写。写两句，我想知道你今天的状态。</span>';
+    }
+  }
+  function showNoteEditor(text){
+    isEditingNote = true;
+    draftNote = text || "";
+    noteInput.value = draftNote;
+    noteEditArea.classList.add("show");
+    editNoteBtn.textContent = "收起";
+    // focus after show
+    setTimeout(() => noteInput.focus(), 40);
+  }
+
+  function render(){
+    saveStore(store);
+
+    renderGreeting();
+
+    // labels
+    tW.textContent = `${store.labels.workout}（近30天）`;
+    tA.textContent = `${store.labels.art}（近30天）`;
+    tR.textContent = `${store.labels.read}（近30天）`;
 
     // month header
     monthTitle.textContent = `${viewMonth.getFullYear()}年${viewMonth.getMonth()+1}月`;
     const mStats = monthStats(store, viewMonth);
     const mp = Math.round((mStats.anyDays / Math.max(1, mStats.daysInMonth))*100);
-    monthMeta.textContent = `本月行动：${mStats.anyDays}/${mStats.daysInMonth}（${mp}%）`;
+    monthMeta.innerHTML = `本月行动：<b style="font-weight:980;color:rgba(31,41,55,.92)">${mStats.anyDays}</b>/${mStats.daysInMonth}（${mp}%）`;
 
     // dow labels
     dow.innerHTML = "";
@@ -625,7 +1157,7 @@
       dow.appendChild(div);
     });
 
-    // calendar grid range
+    // calendar range
     const first = startOfMonth(viewMonth);
     const last = endOfMonth(viewMonth);
 
@@ -643,10 +1175,12 @@
     for(let d = new Date(gridStart); d <= gridEnd; d = addDays(d, 1)){
       const iso = toISODate(d);
       const r = getRec(store, iso);
+      const n = doneCount(r);
+      const mix = mixDayColor(r);
 
       const btn = document.createElement("button");
       btn.className = "day" + (iso===selectedISO ? " sel" : "");
-      btn.style.background = dayColor(r);
+      btn.style.background = mix.bg;
       btn.style.opacity = (d.getMonth()===viewMonth.getMonth()) ? "1" : "0.45";
       btn.title = iso;
 
@@ -655,12 +1189,24 @@
       const num = document.createElement("div");
       num.className = "dayNum";
       num.textContent = String(d.getDate());
+
       const ch = document.createElement("div");
       ch.className = "chip";
-      ch.textContent = doneCount(r) ? String(doneCount(r)) : "";
+      ch.style.background = mix.chip;
+      ch.innerHTML = (n ? `<span class="tiny"></span>${chipLabel(r)}` : "");
+
       inner.appendChild(num);
       inner.appendChild(ch);
       btn.appendChild(inner);
+
+      // RGB dots indicator (cute)
+      const dots = document.createElement("div");
+      dots.className = "taskDots";
+      const dr = document.createElement("span"); dr.style.background = "var(--c-workout)"; dr.className = mix.dots.r ? "on" : "";
+      const dg = document.createElement("span"); dg.style.background = "var(--c-art)";     dg.className = mix.dots.g ? "on" : "";
+      const db = document.createElement("span"); db.style.background = "var(--c-read)";    db.className = mix.dots.b ? "on" : "";
+      dots.appendChild(dr); dots.appendChild(dg); dots.appendChild(db);
+      btn.appendChild(dots);
 
       if(iso===todayISO){
         const tag = document.createElement("div");
@@ -671,14 +1217,15 @@
 
       btn.addEventListener("click", () => {
         selectedISO = iso;
-        editingNote = false;
+        // switching day: auto-hide editor to avoid confusion
+        isEditingNote = false;
         render();
       });
 
       cal.appendChild(btn);
     }
 
-    // top stats
+    // stats
     const streak = calcStreak(store, todayISO);
     const last7 = rangeStats(store, todayISO, 7);
     const last30 = rangeStats(store, todayISO, 30);
@@ -694,32 +1241,27 @@
     selDone.textContent = done;
     isToday.textContent = (selectedISO===todayISO) ? "（今天）" : "";
 
-    // toggles
-    const paintToggle = (el, on, label) => {
-      el.classList.toggle("on", !!on);
-      el.querySelector(".togName").textContent = label;
-      el.querySelector(".togTag").textContent = on ? "已打卡" : "未打卡";
-    };
     paintToggle(togWorkout, rec.workout, store.labels.workout);
     paintToggle(togArt, rec.art, store.labels.art);
     paintToggle(togRead, rec.read, store.labels.read);
 
-    // note display
-    const text = (rec.note || "").trim();
-    noteDisplay.textContent = text || "点击添加备注";
-    noteDisplay.classList.toggle("empty", !text);
-    noteEdit.value = rec.note || "";
-    noteEditArea.style.display = editingNote ? "block" : "none";
+    // note UI
+    const note = (rec.note || "").trim();
+    if(isEditingNote){
+      showNoteEditor(draftNote || note);
+    }else{
+      showNoteView(note);
+    }
 
     // comment
+    const mNow = monthStats(store, viewMonth);
     commentEl.textContent = coachComment({
-      nickname: store.nickname,
-      jasonTone: store.jasonTone,
+      store,
       selectedISO,
-      selectedRec: rec,
+      rec,
       streak,
       last7,
-      thisMonth: mStats
+      thisMonth: mNow
     });
 
     // overview stats cards
@@ -731,92 +1273,104 @@
     sa.textContent = last30.art;
     sr.textContent = last30.read;
     sstreak.textContent = streak;
+  }
 
-    // settings panel sync
-    setTone.checked = !!store.jasonTone;
-    setWeek.checked = !!store.weekStartsOnMonday;
-  };
+  // ---- events ----
+  settingsBtn.addEventListener("click", openSettings);
+  mask.addEventListener("click", closeSettings);
+  closeSheet.addEventListener("click", closeSettings);
 
-  const setRec = (iso, patch) => {
-    const cur = getRec(store, iso);
-    store.days[iso] = { ...cur, ...patch, updatedAt: Date.now() };
-    render();
-  };
+  function toggleSwitch(el){
+    el.classList.toggle("on");
+  }
 
-  // events: calendar controls
-  prevMonth.addEventListener("click", () => {
-    viewMonth = startOfMonth(addMonths(viewMonth, -1));
+  toneSwitch.addEventListener("click", () => toggleSwitch(toneSwitch));
+  weekSwitch.addEventListener("click", () => toggleSwitch(weekSwitch));
+
+  saveSettings.addEventListener("click", () => {
+    store.nickname = (nickInput.value || "").trim() || "露";
+    store.coachName = (coachInput.value || "").trim() || "Jason";
+    store.jasonTone = toneSwitch.classList.contains("on");
+    store.weekStartsOnMonday = weekSwitch.classList.contains("on");
+    saveStore(store);
+    closeSettings();
+    setToast("设置已保存");
     render();
   });
-  thisMonthBtn.addEventListener("click", () => {
-    viewMonth = startOfMonth(new Date());
-    render();
-  });
-  nextMonth.addEventListener("click", () => {
-    viewMonth = startOfMonth(addMonths(viewMonth, 1));
-    render();
-  });
 
-  // toggles
+  prevMonth.addEventListener("click", () => { viewMonth = startOfMonth(addMonths(viewMonth, -1)); render(); });
+  thisMonthBtn.addEventListener("click", () => { viewMonth = startOfMonth(new Date()); render(); });
+  nextMonth.addEventListener("click", () => { viewMonth = startOfMonth(addMonths(viewMonth, 1)); render(); });
+
   togWorkout.addEventListener("click", () => {
     const r = getRec(store, selectedISO);
     setRec(selectedISO, { workout: !r.workout });
+    render();
   });
   togArt.addEventListener("click", () => {
     const r = getRec(store, selectedISO);
     setRec(selectedISO, { art: !r.art });
+    render();
   });
   togRead.addEventListener("click", () => {
     const r = getRec(store, selectedISO);
     setRec(selectedISO, { read: !r.read });
-  });
-
-  // note: display / edit
-  noteDisplay.addEventListener("click", () => {
-    editingNote = true;
-    noteEditArea.style.display = "block";
-    noteEdit.focus();
-  });
-  noteSave.addEventListener("click", () => {
-    setRec(selectedISO, { note: noteEdit.value });
-    editingNote = false;
-    setToast("备注已保存");
-  });
-  noteCancel.addEventListener("click", () => {
-    editingNote = false;
     render();
   });
 
   resetDayBtn.addEventListener("click", () => {
     delete store.days[selectedISO];
-    editingNote = false;
+    saveStore(store);
+    isEditingNote = false;
     setToast("已清空这一天");
     render();
   });
 
-  // settings
-  settingsBtn.addEventListener("click", () => {
-    settingsOverlay.classList.add("show");
+  editNoteBtn.addEventListener("click", () => {
+    const rec = getRec(store, selectedISO);
+    const note = (rec.note || "").trim();
+    if(isEditingNote){
+      // collapse
+      isEditingNote = false;
+      render();
+    }else{
+      isEditingNote = true;
+      draftNote = note;
+      render();
+    }
   });
-  settingsClose.addEventListener("click", () => {
-    settingsOverlay.classList.remove("show");
-  });
-  settingsOverlay.addEventListener("click", (e) => {
-    if(e.target === settingsOverlay) settingsOverlay.classList.remove("show");
-  });
-  setTone.addEventListener("change", () => {
-    store.jasonTone = !!setTone.checked;
-    render();
-  });
-  setWeek.addEventListener("change", () => {
-    store.weekStartsOnMonday = !!setWeek.checked;
+
+  cancelNoteBtn.addEventListener("click", () => {
+    isEditingNote = false;
+    draftNote = "";
+    setToast("已取消编辑");
     render();
   });
 
-  // first render
+  saveNoteBtn.addEventListener("click", () => {
+    const text = (noteInput.value || "").trim();
+    setRec(selectedISO, { note: text });
+    isEditingNote = false;
+    draftNote = "";
+    setToast(text ? "便签已保存" : "便签已清空");
+    render();
+  });
+
+  // keyboard-friendly: Esc closes settings
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){
+      closeSettings();
+      if(isEditingNote){
+        isEditingNote = false;
+        render();
+      }
+    }
+  });
+
+  // init
   render();
+
 })();
 </script>
 </body>
 </html>
-
