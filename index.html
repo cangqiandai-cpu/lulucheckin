@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -12,6 +12,8 @@
       --card:rgba(255,255,255,.86);
       --shadow:0 10px 30px rgba(15,23,42,.06);
       --bg: linear-gradient(180deg, rgba(241,245,249,1) 0%, rgba(255,255,255,1) 60%, rgba(241,245,249,1) 100%);
+      --note-bg:#fef9c3;
+      --note-border:#facc15;
     }
     *{box-sizing:border-box}
     body{
@@ -32,6 +34,7 @@
       cursor:pointer; user-select:none;
     }
     .btn.secondary{background:rgba(15,23,42,.06);}
+    .btn.small{padding:6px 10px; font-size:12px;}
     .card{
       background:var(--card); border:1px solid var(--border); border-radius:20px; padding:14px;
       box-shadow:var(--shadow); backdrop-filter: blur(8px);
@@ -52,7 +55,7 @@
     .dayNum{font-size:14px; font-weight:800;}
     .chip{
       font-size:12px; padding:2px 8px; border-radius:999px;
-      background:rgba(255,255,255,.55); border:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.7); border:1px solid rgba(15,23,42,.08);
     }
     .todayTag{
       position:absolute; left:8px; bottom:6px; font-size:11px; padding:2px 8px; border-radius:999px;
@@ -89,7 +92,7 @@
     }
     textarea{
       width:100%; min-height:92px; border-radius:16px; border:1px solid rgba(15,23,42,.12);
-      padding:12px; font-size:14px; outline:none; background:rgba(255,255,255,.8);
+      padding:12px; font-size:14px; outline:none; background:rgba(255,255,255,.9);
       resize: vertical;
     }
     pre{
@@ -108,9 +111,55 @@
       position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
       padding:10px 14px; border-radius:999px; background:rgba(15,23,42,.9);
       color:white; font-size:13px; box-shadow:0 10px 30px rgba(15,23,42,.25);
-      display:none;
+      display:none; z-index:30;
     }
     .toast.show{display:block;}
+
+    /* note / sticky style */
+    .notePaper{
+      margin-top:4px;
+      background:var(--note-bg);
+      border:1px solid var(--note-border);
+      border-radius:14px;
+      padding:10px 12px;
+      min-height:64px;
+      box-shadow:0 6px 15px rgba(15,23,42,.18);
+      font-size:13px;
+      line-height:1.5;
+      position:relative;
+      cursor:pointer;
+      overflow-wrap:break-word;
+    }
+    .notePaper::before{
+      content:"";
+      position:absolute;
+      top:0; left:50%;
+      transform:translateX(-50%);
+      width:40px; height:6px;
+      border-radius:999px;
+      background:rgba(249,250,251,.7);
+      box-shadow:0 1px 0 rgba(148,163,184,.5);
+    }
+    .notePaper.empty{color:rgba(15,23,42,.45); font-style:italic;}
+    .noteEditArea{margin-top:8px; display:none;}
+    .noteActions{margin-top:8px; display:flex; gap:8px; justify-content:flex-end;}
+
+    /* settings overlay */
+    .settingsOverlay{
+      position:fixed; inset:0; background:rgba(15,23,42,.35);
+      display:none; align-items:center; justify-content:center;
+      z-index:20;
+    }
+    .settingsOverlay.show{display:flex;}
+    .settingsPanel{
+      max-width:320px; width:90%;
+    }
+    .setGroup{margin-top:10px; display:grid; gap:8px;}
+    .setItem{
+      display:flex; justify-content:space-between; align-items:center;
+      font-size:13px; padding:8px 2px;
+    }
+    .setItem input{transform:scale(1.1);}
     @media (min-width: 880px){
       .grid{grid-template-columns: 1.2fr .8fr;}
     }
@@ -128,8 +177,7 @@
         <div class="sub">你不需要每天满分。把做过的事留成证据。</div>
       </div>
       <div class="btnrow">
-        <button id="toneBtn" class="btn secondary" title="切换点评语气">Jason语气：开</button>
-        <button id="weekBtn" class="btn secondary" title="切换周起始">周一开始</button>
+        <button id="settingsBtn" class="btn secondary">⚙ 设置</button>
       </div>
     </header>
 
@@ -157,10 +205,10 @@
             <div class="pill">近30天：<b id="last30">0</b>/30</div>
           </div>
           <div class="legend">
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h0"></span>0</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h1"></span>1</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h2"></span>2</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h3"></span>3</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h0"></span>空</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h1"></span>1 项</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h2"></span>2 项</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;"><span class="sq" id="h3"></span>3 项</span>
           </div>
         </div>
       </section>
@@ -183,7 +231,14 @@
 
           <div style="margin-top:12px;">
             <div style="font-size:13px;font-weight:900;margin-bottom:8px;">备注</div>
-            <textarea id="note" placeholder="写两句：今天做了什么？哪里卡住了？身体/心情怎么样？"></textarea>
+            <div id="noteDisplay" class="notePaper"></div>
+            <div id="noteEditArea" class="noteEditArea">
+              <textarea id="noteEdit" placeholder="写两句：今天做了什么？哪里卡住了？身体/心情怎么样？"></textarea>
+              <div class="noteActions">
+                <button id="noteCancel" class="btn small">取消</button>
+                <button id="noteSave" class="btn secondary small">保存</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -213,9 +268,29 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- 设置面板 -->
+  <div class="settingsOverlay" id="settingsOverlay">
+    <div class="card settingsPanel">
+      <div class="rowTop">
+        <div style="font-size:14px;font-weight:950;">设置</div>
+        <button id="settingsClose" class="btn small">关闭</button>
+      </div>
+      <div class="setGroup">
+        <label class="setItem">
+          <span>Jason 语气</span>
+          <input type="checkbox" id="setTone" />
+        </label>
+        <label class="setItem">
+          <span>周一作为每周开始</span>
+          <input type="checkbox" id="setWeek" />
+        </label>
+      </div>
+    </div>
+  </div>
+
 <script>
 (() => {
-  const STORAGE_KEY = "lu_checkin_html_v1";
+  const STORAGE_KEY = "lu_checkin_html_v2";
 
   const pad2 = n => String(n).padStart(2,"0");
   const toISODate = d => {
@@ -260,19 +335,21 @@
     days: {}
   };
 
+  const clone = obj => (typeof structuredClone === "function" ? structuredClone(obj) : JSON.parse(JSON.stringify(obj)));
+
   const loadStore = () => {
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return structuredClone(defaultStore);
+      if(!raw) return clone(defaultStore);
       const p = JSON.parse(raw);
       return {
-        ...structuredClone(defaultStore),
+        ...clone(defaultStore),
         ...p,
         labels: { ...defaultStore.labels, ...(p.labels||{}) },
         days: p.days || {}
       };
     }catch(e){
-      return structuredClone(defaultStore);
+      return clone(defaultStore);
     }
   };
   const saveStore = s => localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
@@ -323,60 +400,155 @@
     return { anyDays, perfectDays, daysInMonth };
   };
 
-  const heatBg = level => {
-    if(level<=0) return "rgba(148,163,184,0.18)";
-    if(level===1) return "rgba(148,163,184,0.38)";
-    if(level===2) return "rgba(30,41,59,0.22)";
-    return "rgba(30,41,59,0.38)";
+  // colors: 三原色 + 调和
+  const dayColor = rec => {
+    const colors = [];
+    if(rec.workout) colors.push([248,180,180]); // 柔和红
+    if(rec.art)     colors.push([187,230,179]); // 柔和绿
+    if(rec.read)    colors.push([173,196,235]); // 柔和蓝
+    if(colors.length === 0) return "rgba(148,163,184,0.16)";
+    let r=0,g=0,b=0;
+    colors.forEach(c => { r+=c[0]; g+=c[1]; b+=c[2]; });
+    r = Math.round(r/colors.length);
+    g = Math.round(g/colors.length);
+    b = Math.round(b/colors.length);
+    // 往白调一次，饱和度降低一点
+    r = Math.round((r+255)/2);
+    g = Math.round((g+255)/2);
+    b = Math.round((b+255)/2);
+    return `rgb(${r},${g},${b})`;
   };
-  const chip = level => level===3 ? "满" : (level===2 ? "2" : (level===1 ? "1" : ""));
 
-  const coachComment = ({nickname, coachName, jasonTone, selectedISO, selectedRec, streak, last7, thisMonth}) => {
+  const coachComment = ({nickname, jasonTone, selectedISO, selectedRec, streak, last7, thisMonth}) => {
     const name = nickname || "你";
     const done = doneCount(selectedRec);
     const note = (selectedRec.note || "").trim();
 
-    const lead = jasonTone ? `${name}，过来。` : `${name}，我看到了你的记录。`;
+    const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+    const lead = jasonTone
+      ? pick([`${name}，过来。`, `${name}，过来这边。`, `${name}，坐好。`])
+      : pick([`${name}，我看完你的记录了。`, `${name}，今天的打卡我收到了。`]);
 
     let dayLine="";
-    if(done===3) dayLine = jasonTone ? "今天三项全做。漂亮。" : "今天三项都完成了，很稳。";
-    else if(done===2) dayLine = jasonTone ? "两项。够硬。" : "今天完成两项，很不错。";
-    else if(done===1) dayLine = jasonTone ? "只做了一项，但至少你动了。" : "今天完成一项，也算把节奏维持住了。";
-    else dayLine = jasonTone ? "今天空着。我不喜欢你把自己放空。" : "今天没有打卡，先把原因记下来也行。";
+    if(done===3){
+      dayLine = jasonTone
+        ? pick(["今天三项全做。漂亮。","今天是满格表现，我很满意。"])
+        : pick(["今天三项都完成了，很稳。","今天是满格的一天，节奏很好。"]);
+    }else if(done===2){
+      dayLine = jasonTone
+        ? pick(["两项。够硬。","少一项没关系，这个状态我认可。"])
+        : pick(["今天完成两项，很不错。","今天做了两项，整体节奏很舒服。"]);
+    }else if(done===1){
+      dayLine = jasonTone
+        ? pick(["只做了一项，但至少你动了。","只有一项，也比躺平强多了。"])
+        : pick(["今天完成一项，也算把节奏维持住了。","只做了一项也没关系，关键是没让自己完全停下。"]);
+    }else{
+      dayLine = jasonTone
+        ? pick(["今天空着。我不喜欢你把自己放空。","今天没有任何记录，下次不要再这样放空自己。"])
+        : pick(["今天没有打卡，先把原因记下来也行。","今天是空白的一天，也可以当作缓冲，但别连续太多。"]);
+    }
 
     let streakLine="";
-    if(streak>=10) streakLine = jasonTone ? `连续 ${streak} 天有行动。别松。` : `你已经连续 ${streak} 天保持行动了。`;
-    else if(streak>=3) streakLine = jasonTone ? `连续 ${streak} 天。把它续上。` : `连续 ${streak} 天有行动，继续。`;
-    else streakLine = jasonTone ? "我们要的不是完美，是持续。" : "不用追求完美，持续更重要。";
+    if(streak>=10){
+      streakLine = jasonTone
+        ? pick([`连续 ${streak} 天有行动。别松。`,`连续 ${streak} 天，你已经不是随便说说的人了。`])
+        : pick([`你已经连续 ${streak} 天保持行动了，很厉害。`,`连续 ${streak} 天坚持，已经能看出你的耐心和定力。`]);
+    }else if(streak>=3){
+      streakLine = jasonTone
+        ? pick([`连续 ${streak} 天。把它续上。`,`连续 ${streak} 天，不错，继续往上堆。`])
+        : pick([`连续 ${streak} 天有行动，节奏刚刚好。`,`连续 ${streak} 天在动，说明你已经上路了。`]);
+    }else{
+      streakLine = jasonTone
+        ? pick(["我们要的不是完美，是持续。","别急着给自己判输，现在才刚开始。"])
+        : pick(["不用追求完美，持续更重要。","一开始节奏不稳很正常，慢慢把频率提上来就好。"]);
+    }
 
     const weekLine = (() => {
-      if(last7.anyDays>=6) return jasonTone ? `近7天你有 ${last7.anyDays} 天动了，狠。` : `近7天有 ${last7.anyDays} 天完成至少一项，很棒。`;
-      if(last7.anyDays>=4) return jasonTone ? `近7天 ${last7.anyDays} 天有行动。够用。` : `近7天有 ${last7.anyDays} 天在行动，节奏不错。`;
-      if(last7.anyDays>=2) return jasonTone ? `近7天只动了 ${last7.anyDays} 天。下周我要你更稳。` : `近7天行动天数偏少，我们把节奏找回来。`;
-      return jasonTone ? "近7天太空了。你得回来。" : "近7天几乎没动，先从最小一步开始。";
+      if(last7.anyDays>=6) return jasonTone
+        ? pick([`近7天你有 ${last7.anyDays} 天动了，狠。`,`近7天几乎都在动，这种密度我很满意。`])
+        : pick([`近7天有 ${last7.anyDays} 天完成至少一项，很棒。`,`近7天几乎都是行动日，你照顾好自己了。`]);
+      if(last7.anyDays>=4) return jasonTone
+        ? pick([`近7天 ${last7.anyDays} 天有行动。够用。`,`近7天的节奏算合格，我还想看你再往上提一格。`])
+        : pick([`近7天有 ${last7.anyDays} 天在行动，节奏不错。`,`近7天的出勤率挺稳定的，可以再稍微往上推一点。`]);
+      if(last7.anyDays>=2) return jasonTone
+        ? pick([`近7天只动了 ${last7.anyDays} 天。下周我要你更稳。`,`近7天有点松，下周把自己收回来。`])
+        : pick([`近7天行动天数偏少，我们一起把节奏找回来。`,`近7天有点散，下周从小目标重新起步。`]);
+      return jasonTone
+        ? "近7天太空了。你得回来。"
+        : "近7天几乎没动，先从最小的一步开始就好。";
     })();
 
     const p = Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth)) * 100);
     const monthLine = (() => {
-      if(p>=60) return jasonTone ? `本月行动率 ${p}%。我喜欢这种稳定。` : `本月行动率 ${p}%，非常稳定。`;
-      if(p>=35) return jasonTone ? `本月行动率 ${p}%。还能再往上。` : `本月行动率 ${p}%，可以继续提高稳定性。`;
-      return jasonTone ? `本月行动率 ${p}%。我会把你拽回轨道。` : `本月行动率 ${p}%，我们把启动成本降下来。`;
+      if(p>=60) return jasonTone
+        ? pick([`本月行动率 ${p}%。我喜欢这种稳定。`,`本月行动率 ${p}%，说明你不是嘴上说说。`])
+        : pick([`本月行动率 ${p}%，非常稳定。`,`本月行动率 ${p}%，长期下来会很有感觉。`]);
+      if(p>=35) return jasonTone
+        ? pick([`本月行动率 ${p}%。还能再往上。`,`本月行动率 ${p}%，勉强过线，再往前推一点。`])
+        : pick([`本月行动率 ${p}%，可以继续提高稳定性。`,`本月行动率 ${p}%，已经有基础了，再补几天会更好。`]);
+      return jasonTone
+        ? pick([`本月行动率 ${p}%。我会把你拽回轨道。`,`本月行动率 ${p}%，下个月我们重新布阵。`])
+        : pick([`本月行动率 ${p}%，我们先把起动成本降下来。`,`本月行动率 ${p}%，从最小可执行的动作开始就好。`]);
     })();
 
     const noteLine = note
-      ? (jasonTone ? `我看了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}` : `我读了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}`)
-      : (jasonTone ? "给我留两句备注。我想知道你今天怎么过的。" : "写两句备注会更容易复盘。");
+      ? (jasonTone
+          ? `我看了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}`
+          : `我读了你的备注：${note.length>32 ? note.slice(0,32)+"…" : note}`)
+      : (jasonTone
+          ? "给我留两句备注。我想知道你今天怎么过的。"
+          : "写两句备注会更容易复盘。");
+
+    // 节日彩蛋（公历）
+    let holidayLine = "";
+    const [,mStr,dStr] = selectedISO.split("-");
+    const m = Number(mStr), d = Number(dStr);
+    const md = m*100 + d;
+    if(md === 101){ // 元旦
+      holidayLine = jasonTone
+        ? "新的一年从今天开始。今年我会盯着你，一直往前推。"
+        : "新的一年从今天开始，把你想坚持的事情一点点写进日历里。";
+    }else if(md === 214){ // 情人节
+      holidayLine = jasonTone
+        ? "情人节。说实话，比起巧克力，我更想看你对自己好一点。"
+        : "情人节也算约会日，就当是在跟更好的自己约会。";
+    }else if(md === 1225){ // 圣诞
+      holidayLine = jasonTone
+        ? "圣诞节。今天允许你多偷一点懒，但我还是希望日历上别完全空着。"
+        : "圣诞节，哪怕只做一小件事，也算给这一年多点点亮。";
+    }else if(md === 131){ // 1 月 31 只是占位，下面是你生日 1.22
+      // 占位无事
+    }else if(md === 122){ // 你生日
+      holidayLine = jasonTone
+        ? "今天是你生日。我只说一次：你今年要好好照顾自己，听见没有。"
+        : "今天是你生日。谢谢你一路走到这里，也辛苦你了。";
+    }
 
     const tail = jasonTone ? "(把你拢到怀里，拍了拍后背) 今天到这。" : "(轻轻抱一下) 今天到这。";
 
-    return [lead, `${selectedISO}：${dayLine}`, streakLine, weekLine, monthLine, noteLine, tail].join("\n");
+    const lines = [
+      lead,
+      `${selectedISO}：${dayLine}`,
+      streakLine,
+      weekLine,
+      monthLine,
+      noteLine
+    ];
+    if(holidayLine) lines.push(holidayLine);
+    lines.push(tail);
+    return lines.join("\n");
   };
 
   // ---- UI wiring ----
   const $ = id => document.getElementById(id);
 
-  const toneBtn = $("toneBtn");
-  const weekBtn = $("weekBtn");
+  const settingsBtn = $("settingsBtn");
+  const settingsOverlay = $("settingsOverlay");
+  const settingsClose = $("settingsClose");
+  const setTone = $("setTone");
+  const setWeek = $("setWeek");
+
   const prevMonth = $("prevMonth");
   const thisMonthBtn = $("thisMonth");
   const nextMonth = $("nextMonth");
@@ -399,7 +571,13 @@
   const togWorkout = $("togWorkout");
   const togArt = $("togArt");
   const togRead = $("togRead");
-  const noteEl = $("note");
+
+  const noteDisplay = $("noteDisplay");
+  const noteEditArea = $("noteEditArea");
+  const noteEdit = $("noteEdit");
+  const noteSave = $("noteSave");
+  const noteCancel = $("noteCancel");
+
   const commentEl = $("comment");
 
   const s7 = $("s7"), s7s = $("s7s");
@@ -417,23 +595,20 @@
     toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
   };
 
-  // heat legend
-  $("h0").style.background = heatBg(0);
-  $("h1").style.background = heatBg(1);
-  $("h2").style.background = heatBg(2);
-  $("h3").style.background = heatBg(3);
+  // heat legend 示例：0 空；1 一项；2 两项；3 三项
+  $("h0").style.background = "rgba(148,163,184,0.16)";
+  $("h1").style.background = dayColor({workout:true,art:false,read:false});
+  $("h2").style.background = dayColor({workout:true,art:true,read:false});
+  $("h3").style.background = dayColor({workout:true,art:true,read:true});
 
   let store = loadStore();
   let viewMonth = startOfMonth(new Date());
   let selectedISO = toISODate(new Date());
   const todayISO = toISODate(new Date());
+  let editingNote = false;
 
   const render = () => {
     saveStore(store);
-
-    // buttons text
-    toneBtn.textContent = store.jasonTone ? "Jason语气：开" : "Jason语气：关";
-    weekBtn.textContent = store.weekStartsOnMonday ? "周一开始" : "周日开始";
 
     // month header
     monthTitle.textContent = `${viewMonth.getFullYear()}年${viewMonth.getMonth()+1}月`;
@@ -468,11 +643,10 @@
     for(let d = new Date(gridStart); d <= gridEnd; d = addDays(d, 1)){
       const iso = toISODate(d);
       const r = getRec(store, iso);
-      const level = doneCount(r);
 
       const btn = document.createElement("button");
       btn.className = "day" + (iso===selectedISO ? " sel" : "");
-      btn.style.background = heatBg(level);
+      btn.style.background = dayColor(r);
       btn.style.opacity = (d.getMonth()===viewMonth.getMonth()) ? "1" : "0.45";
       btn.title = iso;
 
@@ -483,7 +657,7 @@
       num.textContent = String(d.getDate());
       const ch = document.createElement("div");
       ch.className = "chip";
-      ch.textContent = chip(level);
+      ch.textContent = doneCount(r) ? String(doneCount(r)) : "";
       inner.appendChild(num);
       inner.appendChild(ch);
       btn.appendChild(inner);
@@ -497,6 +671,7 @@
 
       btn.addEventListener("click", () => {
         selectedISO = iso;
+        editingNote = false;
         render();
       });
 
@@ -529,12 +704,16 @@
     paintToggle(togArt, rec.art, store.labels.art);
     paintToggle(togRead, rec.read, store.labels.read);
 
-    noteEl.value = rec.note || "";
+    // note display
+    const text = (rec.note || "").trim();
+    noteDisplay.textContent = text || "点击添加备注";
+    noteDisplay.classList.toggle("empty", !text);
+    noteEdit.value = rec.note || "";
+    noteEditArea.style.display = editingNote ? "block" : "none";
 
     // comment
     commentEl.textContent = coachComment({
       nickname: store.nickname,
-      coachName: store.coachName,
       jasonTone: store.jasonTone,
       selectedISO,
       selectedRec: rec,
@@ -552,6 +731,10 @@
     sa.textContent = last30.art;
     sr.textContent = last30.read;
     sstreak.textContent = streak;
+
+    // settings panel sync
+    setTone.checked = !!store.jasonTone;
+    setWeek.checked = !!store.weekStartsOnMonday;
   };
 
   const setRec = (iso, patch) => {
@@ -560,15 +743,7 @@
     render();
   };
 
-  // events
-  toneBtn.addEventListener("click", () => {
-    store.jasonTone = !store.jasonTone;
-    render();
-  });
-  weekBtn.addEventListener("click", () => {
-    store.weekStartsOnMonday = !store.weekStartsOnMonday;
-    render();
-  });
+  // events: calendar controls
   prevMonth.addEventListener("click", () => {
     viewMonth = startOfMonth(addMonths(viewMonth, -1));
     render();
@@ -582,6 +757,7 @@
     render();
   });
 
+  // toggles
   togWorkout.addEventListener("click", () => {
     const r = getRec(store, selectedISO);
     setRec(selectedISO, { workout: !r.workout });
@@ -595,13 +771,45 @@
     setRec(selectedISO, { read: !r.read });
   });
 
-  noteEl.addEventListener("input", (e) => {
-    setRec(selectedISO, { note: e.target.value });
+  // note: display / edit
+  noteDisplay.addEventListener("click", () => {
+    editingNote = true;
+    noteEditArea.style.display = "block";
+    noteEdit.focus();
+  });
+  noteSave.addEventListener("click", () => {
+    setRec(selectedISO, { note: noteEdit.value });
+    editingNote = false;
+    setToast("备注已保存");
+  });
+  noteCancel.addEventListener("click", () => {
+    editingNote = false;
+    render();
   });
 
   resetDayBtn.addEventListener("click", () => {
     delete store.days[selectedISO];
+    editingNote = false;
     setToast("已清空这一天");
+    render();
+  });
+
+  // settings
+  settingsBtn.addEventListener("click", () => {
+    settingsOverlay.classList.add("show");
+  });
+  settingsClose.addEventListener("click", () => {
+    settingsOverlay.classList.remove("show");
+  });
+  settingsOverlay.addEventListener("click", (e) => {
+    if(e.target === settingsOverlay) settingsOverlay.classList.remove("show");
+  });
+  setTone.addEventListener("change", () => {
+    store.jasonTone = !!setTone.checked;
+    render();
+  });
+  setWeek.addEventListener("change", () => {
+    store.weekStartsOnMonday = !!setWeek.checked;
     render();
   });
 
@@ -611,3 +819,4 @@
 </script>
 </body>
 </html>
+
