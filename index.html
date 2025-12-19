@@ -118,8 +118,9 @@
     .chip{
       font-size:12px; padding:2px 8px; border-radius:999px;
       background:rgba(255,255,255,.62); border:1px solid rgba(31,41,55,.08);
-      display:inline-flex; align-items:center; gap:4px;
+      display:inline-flex; align-items:center; gap:6px;
     }
+    .chip .tiny{width:6px;height:6px;border-radius:999px;background:rgba(31,41,55,.28)}
     .todayTag{
       position:absolute; left:8px; bottom:6px; font-size:11px; padding:2px 8px; border-radius:999px;
       background:rgba(31,41,55,.88); color:white;
@@ -556,6 +557,7 @@
   const doneCount = r => [r.workout,r.art,r.read].filter(Boolean).length;
 
   const calcStreak = (store, fromISO) => {
+    // 连续：当天做任意一项算“行动日”
     let streak = 0;
     const from = parseISO(fromISO);
     for(let i=0;i<5000;i++){
@@ -598,7 +600,7 @@
     return { anyDays, perfectDays, daysInMonth };
   };
 
-  // --- RGB mix (brighter) ---
+  // --- RGB mix (cute pastel) ---
   const hexToRgb = (hex) => {
     const h = hex.replace("#","").trim();
     const v = h.length===3 ? h.split("").map(x=>x+x).join("") : h;
@@ -623,39 +625,24 @@
     if(rec.workout) picks.push(BASE.workout);
     if(rec.art) picks.push(BASE.art);
     if(rec.read) picks.push(BASE.read);
-    const level = picks.length;
-    if(level===0){
+    if(picks.length===0){
       return {
-        bg: "rgba(31,41,55,0.06)",
-        chip: "rgba(255,255,255,0.70)",
+        bg: "rgba(31,41,55,0.08)",
+        chip: "rgba(31,41,55,0.14)",
         dots: { r:false, g:false, b:false }
       };
     }
+    // average + pastelize
     let r=0,g=0,b=0;
     picks.forEach(c => { r+=c.r; g+=c.g; b+=c.b; });
-    r/=level; g/=level; b/=level;
+    r/=picks.length; g/=picks.length; b/=picks.length;
 
-    // 1 项稍柔，2/3 项更鲜亮
-    let t, alphaBg, alphaChip;
-    if(level===1){
-      t = 0.18;       // 轻微往白里拉
-      alphaBg = 0.38;
-      alphaChip = 0.70;
-    }else if(level===2){
-      t = 0.08;       // 接近原色
-      alphaBg = 0.50;
-      alphaChip = 0.80;
-    }else{ // 3 项
-      t = 0.02;       // 几乎不洗白
-      alphaBg = 0.58;
-      alphaChip = 0.86;
-    }
-
-    const pastel = blendToWhite({r,g,b}, t);
+    // cute: push a bit towards white and keep airy
+    const pastel = blendToWhite({r,g,b}, 0.28);
 
     return {
-      bg: rgbToRgba(pastel.r, pastel.g, pastel.b, alphaBg),
-      chip: rgbToRgba(pastel.r, pastel.g, pastel.b, alphaChip),
+      bg: rgbToRgba(pastel.r, pastel.g, pastel.b, 0.30),
+      chip: rgbToRgba(pastel.r, pastel.g, pastel.b, 0.52),
       dots: { r:rec.workout, g:rec.art, b:rec.read }
     };
   }
@@ -678,7 +665,7 @@
     return "晚上好";
   }
 
-  // --- Date-based seeded random ---
+  // --- Date-based seeded random (stable per day) ---
   function hashStr(str){
     let h = 2166136261;
     for(let i=0;i<str.length;i++){
@@ -692,11 +679,12 @@
     return list[seed % list.length];
   }
 
-  // --- Holiday easter eggs ---
+  // --- Holiday easter eggs (Gregorian) ---
   function holidayOf(iso){
     const [Y,M,D] = iso.split("-").map(Number);
     const md = pad2(M)+"-"+pad2(D);
 
+    // user birthday egg (month-day only)
     if(md === "01-22"){
       return { name:"生日彩蛋", emoji:"🎂", line:"今天是你的日子。愿望交给我，行动交给你。", extra:"我给你留了一个小奖励：抱抱+亲一下（认真）。" };
     }
@@ -714,7 +702,7 @@
     return map[md] || null;
   }
 
-  // --- Comment templates (同上一版，略) ---
+  // --- Richer comment templates ---
   const T = {
     leadJason: [
       "${name}，过来。",
@@ -900,15 +888,16 @@
     const name = store.nickname || "你";
     const noteRaw = (rec.note || "").trim();
 
+    // seeded variety
     const seed = hashStr(selectedISO + "|" + doneCount(rec) + "|" + streak);
     const isJason = !!store.jasonTone;
 
     const holiday = holidayOf(selectedISO);
 
-    const holidayEmoji = holiday ? holiday.emoji : "☁️";
-
+    // pick lead
     const lead = pick(isJason ? T.leadJason : T.leadSoft, seed + 1);
 
+    // day line
     let dayList;
     const done = doneCount(rec);
     if(done===0) dayList = isJason ? T.day0Jason : T.day0Soft;
@@ -917,15 +906,9 @@
     else dayList = isJason ? T.day3Jason : T.day3Soft;
     const dayLine = pick(dayList, seed + 2);
 
-    const vars = {
-      name,
-      streak,
-      n:last7.anyDays,
-      p: Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth))*100),
-      note:""
-    };
-
+    // streak line
     let streakLine;
+    const vars = { name, streak, n:last7.anyDays, p: Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth))*100), note:"" };
     if(isJason){
       if(streak >= 10) streakLine = pick(T.streakHighJason, seed + 3);
       else if(streak >= 3) streakLine = pick(T.streakMidJason, seed + 3);
@@ -936,6 +919,7 @@
       else streakLine = pick(T.streakLowSoft, seed + 3);
     }
 
+    // week line
     let weekLine;
     if(isJason){
       weekLine = last7.anyDays >= 5 ? pick(T.weekGreatJason, seed + 4) : pick(T.weekOkJason, seed + 4);
@@ -943,6 +927,7 @@
       weekLine = pick(T.weekSoft, seed + 4);
     }
 
+    // month line
     const p = vars.p;
     let monthLine;
     if(isJason){
@@ -953,6 +938,7 @@
       monthLine = pick(T.monthSoft, seed + 5);
     }
 
+    // note line
     let noteLine;
     if(noteRaw){
       const clipped = noteRaw.length > 36 ? noteRaw.slice(0,36) + "…" : noteRaw;
@@ -962,14 +948,17 @@
       noteLine = pick(isJason ? T.noteEmptyJason : T.noteEmptySoft, seed + 6);
     }
 
+    // holiday egg
     let holidayLine = "";
     if(holiday){
+      // only add more obvious egg if user did something or it's a special day
       if(done > 0){
-        holidayLine = `${holidayEmoji} ${holiday.name}：${holiday.line} ${holiday.extra}`;
+        holidayLine = `${holiday.emoji} ${holiday.name}：${holiday.line} ${holiday.extra}`;
       }else{
-        holidayLine = `${holidayEmoji} ${holiday.name}：${holiday.line}`;
+        holidayLine = `${holiday.emoji} ${holiday.name}：${holiday.line}`;
       }
     }else{
+      // micro-easter egg: if 2 items -> “混色奖励”
       if(done===2){
         const pairs = [
           "两项混色成功。你看，努力会变成新的颜色。",
@@ -988,6 +977,7 @@
       }
     }
 
+    // tail
     const tail = pick(isJason ? T.tailJason : T.tailSoft, seed + 7);
 
     const lines = [
@@ -1005,6 +995,7 @@
     return lines.join("\n");
   }
 
+  // ---- UI wiring ----
   const $ = id => document.getElementById(id);
 
   const greetEl = $("greet");
@@ -1073,6 +1064,7 @@
   let selectedISO = toISODate(new Date());
   const todayISO = toISODate(new Date());
 
+  // note edit state (UI only)
   let isEditingNote = false;
   let draftNote = "";
 
@@ -1105,12 +1097,18 @@
     greetEl.innerHTML = `${emoji} <b>${part}，${name}</b>。今天怎么样？${extra ? " " + extra : ""}`;
   }
 
-  function paintToggle(el, on, label){
+  function paintToggle(el, on, label, colorHex){
     el.classList.toggle("on", !!on);
     el.querySelector(".togName").textContent = label;
     el.querySelector(".togTag").textContent = on ? "已打卡" : "未打卡";
+    // subtle color hint on checkbox outline
     const box = el.querySelector(".box");
-    box.style.borderColor = on ? "rgba(255,255,255,.0)" : "rgba(31,41,55,.12)";
+    if(on){
+      box.style.borderColor = "rgba(255,255,255,.0)";
+    }else{
+      box.style.borderColor = "rgba(31,41,55,.12)";
+    }
+    // small label color accent
     el.querySelector(".togName").style.textShadow = on ? "0 10px 24px rgba(31,41,55,.06)" : "none";
   }
 
@@ -1131,6 +1129,7 @@
     noteInput.value = draftNote;
     noteEditArea.classList.add("show");
     editNoteBtn.textContent = "收起";
+    // focus after show
     setTimeout(() => noteInput.focus(), 40);
   }
 
@@ -1139,15 +1138,18 @@
 
     renderGreeting();
 
+    // labels
     tW.textContent = `${store.labels.workout}（近30天）`;
     tA.textContent = `${store.labels.art}（近30天）`;
     tR.textContent = `${store.labels.read}（近30天）`;
 
+    // month header
     monthTitle.textContent = `${viewMonth.getFullYear()}年${viewMonth.getMonth()+1}月`;
     const mStats = monthStats(store, viewMonth);
     const mp = Math.round((mStats.anyDays / Math.max(1, mStats.daysInMonth))*100);
     monthMeta.innerHTML = `本月行动：<b style="font-weight:980;color:rgba(31,41,55,.92)">${mStats.anyDays}</b>/${mStats.daysInMonth}（${mp}%）`;
 
+    // dow labels
     dow.innerHTML = "";
     const labels = store.weekStartsOnMonday ? ["一","二","三","四","五","六","日"] : ["日","一","二","三","四","五","六"];
     labels.forEach(w => {
@@ -1156,6 +1158,7 @@
       dow.appendChild(div);
     });
 
+    // calendar range
     const first = startOfMonth(viewMonth);
     const last = endOfMonth(viewMonth);
 
@@ -1168,6 +1171,7 @@
     const tail = (weekStartIdx + 6 - lastDow + 7) % 7;
     const gridEnd = addDays(last, tail);
 
+    // cells
     cal.innerHTML = "";
     for(let d = new Date(gridStart); d <= gridEnd; d = addDays(d, 1)){
       const iso = toISODate(d);
@@ -1190,18 +1194,18 @@
       const ch = document.createElement("div");
       ch.className = "chip";
       ch.style.background = mix.chip;
-      if(n>0) ch.textContent = chipLabel(r);
-      else ch.textContent = "";
+      ch.innerHTML = (n ? `<span class="tiny"></span>${chipLabel(r)}` : "");
 
       inner.appendChild(num);
       inner.appendChild(ch);
       btn.appendChild(inner);
 
+      // RGB dots indicator (cute)
       const dots = document.createElement("div");
       dots.className = "taskDots";
-      const dr = document.createElement("span"); dr.style.background = "var(--c-workout)"; if(mix.dots.r) dr.classList.add("on");
-      const dg = document.createElement("span"); dg.style.background = "var(--c-art)";     if(mix.dots.g) dg.classList.add("on");
-      const db = document.createElement("span"); db.style.background = "var(--c-read)";    if(mix.dots.b) db.classList.add("on");
+      const dr = document.createElement("span"); dr.style.background = "var(--c-workout)"; dr.className = mix.dots.r ? "on" : "";
+      const dg = document.createElement("span"); dg.style.background = "var(--c-art)";     dg.className = mix.dots.g ? "on" : "";
+      const db = document.createElement("span"); db.style.background = "var(--c-read)";    db.className = mix.dots.b ? "on" : "";
       dots.appendChild(dr); dots.appendChild(dg); dots.appendChild(db);
       btn.appendChild(dots);
 
@@ -1214,6 +1218,7 @@
 
       btn.addEventListener("click", () => {
         selectedISO = iso;
+        // switching day: auto-hide editor to avoid confusion
         isEditingNote = false;
         render();
       });
@@ -1221,6 +1226,7 @@
       cal.appendChild(btn);
     }
 
+    // stats
     const streak = calcStreak(store, todayISO);
     const last7 = rangeStats(store, todayISO, 7);
     const last30 = rangeStats(store, todayISO, 30);
@@ -1229,6 +1235,7 @@
     last7El.textContent = last7.anyDays;
     last30El.textContent = last30.anyDays;
 
+    // selected day panel
     const rec = getRec(store, selectedISO);
     const done = doneCount(rec);
     selDate.textContent = selectedISO;
@@ -1239,6 +1246,7 @@
     paintToggle(togArt, rec.art, store.labels.art);
     paintToggle(togRead, rec.read, store.labels.read);
 
+    // note UI
     const note = (rec.note || "").trim();
     if(isEditingNote){
       showNoteEditor(draftNote || note);
@@ -1246,6 +1254,7 @@
       showNoteView(note);
     }
 
+    // comment
     const mNow = monthStats(store, viewMonth);
     commentEl.textContent = coachComment({
       store,
@@ -1256,6 +1265,7 @@
       thisMonth: mNow
     });
 
+    // overview stats cards
     s7.textContent = `${last7.anyDays}/7`;
     s7s.textContent = `满分 ${last7.perfectDays} 天`;
     s30.textContent = `${last30.anyDays}/30`;
@@ -1266,11 +1276,14 @@
     sstreak.textContent = streak;
   }
 
+  // ---- events ----
   settingsBtn.addEventListener("click", openSettings);
   mask.addEventListener("click", closeSettings);
   closeSheet.addEventListener("click", closeSettings);
 
-  function toggleSwitch(el){ el.classList.toggle("on"); }
+  function toggleSwitch(el){
+    el.classList.toggle("on");
+  }
 
   toneSwitch.addEventListener("click", () => toggleSwitch(toneSwitch));
   weekSwitch.addEventListener("click", () => toggleSwitch(weekSwitch));
@@ -1318,6 +1331,7 @@
     const rec = getRec(store, selectedISO);
     const note = (rec.note || "").trim();
     if(isEditingNote){
+      // collapse
       isEditingNote = false;
       render();
     }else{
@@ -1343,6 +1357,7 @@
     render();
   });
 
+  // keyboard-friendly: Esc closes settings
   document.addEventListener("keydown", (e) => {
     if(e.key === "Escape"){
       closeSettings();
@@ -1353,21 +1368,10 @@
     }
   });
 
-  const greetEl = document.getElementById("greet");
-  function renderGreetingInit(){
-    const name = store.nickname || "你";
-    const part = dayPart();
-    const holiday = holidayOf(toISODate(new Date()));
-    const emoji = holiday ? holiday.emoji : "☁️";
-    const extra = holiday ? `今天是${holiday.name}。` : "";
-    greetEl.innerHTML = `${emoji} <b>${part}，${name}</b>。今天怎么样？${extra ? " " + extra : ""}`;
-  }
-
-  renderGreetingInit();
+  // init
   render();
 
 })();
 </script>
 </body>
 </html>
-
