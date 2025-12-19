@@ -4,10 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>每日打卡</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  <!-- 网页图标（至少准备一个就行） -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" href="favicon.png">
+
   <style>
     :root{
-      /* cute & coordinated palette */
+      /* palette */
       --ink:#1f2937;
       --muted:rgba(31,41,55,.62);
       --border:rgba(31,41,55,.10);
@@ -19,19 +22,15 @@
         radial-gradient(900px 560px at 50% 100%, rgba(205,255,231,.50) 0%, rgba(255,255,255,0) 60%),
         linear-gradient(180deg, rgba(248,250,252,1) 0%, rgba(255,255,255,1) 55%, rgba(248,250,252,1) 100%);
 
-      /* task colors (RGB primaries, softened/pastel) */
+      /* 三原色 */
       --c-workout: #ff3b5c; /* red */
       --c-art:     #22c55e; /* green */
       --c-read:    #3b82f6; /* blue */
 
       --pill: rgba(255,255,255,.72);
-      --pill2: rgba(31,41,55,.06);
       --focus: rgba(31,41,55,.92);
 
       --radius-xl: 22px;
-      --radius-lg: 18px;
-      --radius-md: 14px;
-      --radius-sm: 12px;
 
       --tap: 42px;
     }
@@ -91,21 +90,25 @@
       box-shadow:var(--shadow); backdrop-filter: blur(10px);
     }
     .grid{display:grid; grid-template-columns: 1fr; gap:12px; margin-top:14px;}
+
     .monthTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
     .monthTitle{font-size:16px; font-weight:900;}
-    .monthMeta{font-size:12px; color:var(--muted); display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+    .monthMeta{font-size:12px; color:rgba(31,41,55,.62); display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
     .miniLegend{
       display:inline-flex; gap:8px; align-items:center; flex-wrap:wrap;
       padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:var(--pill);
+      margin-top:6px;
     }
-    .dot3{display:inline-flex; gap:6px; align-items:center;}
+    .dot3{display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap;}
     .d{width:10px;height:10px;border-radius:999px; box-shadow:0 8px 18px rgba(31,41,55,.10);}
     .d.r{background:var(--c-workout)}
     .d.g{background:var(--c-art)}
     .d.b{background:var(--c-read)}
+
     .dow{display:grid; grid-template-columns: repeat(7,1fr); gap:8px; margin:12px 0 8px;}
     .dow div{text-align:center; font-size:12px; color:rgba(31,41,55,.55);}
     .cal{display:grid; grid-template-columns: repeat(7,1fr); gap:8px;}
+
     .day{
       position:relative; height:46px; border-radius:16px; border:1px solid var(--border);
       overflow:hidden; cursor:pointer; text-align:left; padding:0;
@@ -118,9 +121,8 @@
     .chip{
       font-size:12px; padding:2px 8px; border-radius:999px;
       background:rgba(255,255,255,.62); border:1px solid rgba(31,41,55,.08);
-      display:inline-flex; align-items:center; gap:6px;
+      display:inline-flex; align-items:center;
     }
-    .chip .tiny{width:6px;height:6px;border-radius:999px;background:rgba(31,41,55,.28)}
     .todayTag{
       position:absolute; left:8px; bottom:6px; font-size:11px; padding:2px 8px; border-radius:999px;
       background:rgba(31,41,55,.88); color:white;
@@ -134,6 +136,7 @@
     }
     .taskDots span{width:7px;height:7px;border-radius:999px; opacity:.25}
     .taskDots span.on{opacity:1}
+
     .legendRow{margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
     .pills{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
     .pill{
@@ -141,11 +144,14 @@
       border:1px solid var(--border); background:var(--pill);
     }
     .pill b{font-weight:950;}
+
     .stack{display:grid; grid-template-columns: 1fr; gap:12px;}
     .rowTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
     .selDate{font-size:15px; font-weight:950;}
     .muted{font-size:13px; color:var(--muted);}
-    .tog{display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;
+
+    .tog{
+      display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;
       border-radius:20px; padding:12px; border:1px solid var(--border);
       background:rgba(255,255,255,.72); cursor:pointer;
       min-height: 56px;
@@ -164,7 +170,7 @@
       background:rgba(255,255,255,.85);
     }
 
-    /* Sticky note (memo) */
+    /* 便签纸 */
     .noteShell{margin-top:12px;}
     .noteTop{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
     .noteTitle{font-size:13px; font-weight:950;}
@@ -175,7 +181,7 @@
       padding:14px 14px 12px;
       border:1px solid rgba(31,41,55,.10);
       background:
-        linear-gradient(0deg, rgba(255,255,255,.7), rgba(255,255,255,.7)),
+        linear-gradient(0deg, rgba(255,255,255,.80), rgba(255,255,255,.80)),
         repeating-linear-gradient(
           180deg,
           rgba(31,41,55,.00) 0px,
@@ -235,7 +241,7 @@
     }
     .toast.show{display:block;}
 
-    /* Settings modal (cute bottom sheet) */
+    /* 设置 bottom sheet */
     .modalMask{
       position:fixed; inset:0;
       background: rgba(15,23,42,.30);
@@ -314,6 +320,7 @@
     .switch.on:before{transform: translateX(22px);}
     .sheetBtns{margin-top:12px; display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;}
     .hintSmall{font-size:12px; color: rgba(31,41,55,.52); margin-top:10px;}
+
     @media (min-width: 900px){
       .grid{grid-template-columns: 1.2fr .8fr;}
       .sheetGrid{grid-template-columns: 1fr 1fr;}
@@ -343,19 +350,20 @@
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <div id="monthTitle" class="monthTitle">—</div>
             <div id="monthMeta" class="monthMeta">—</div>
-            <div class="miniLegend" title="三原色任务说明">
-              <span class="dot3">
-                <span class="d r"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">锻炼</span>
-                <span class="d g" style="margin-left:6px;"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">画画</span>
-                <span class="d b" style="margin-left:6px;"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">读书</span>
-              </span>
-            </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button id="prevMonth" class="btn">上月</button>
             <button id="thisMonth" class="btn">本月</button>
             <button id="nextMonth" class="btn">下月</button>
           </div>
+        </div>
+
+        <div class="miniLegend" title="三原色任务说明">
+          <span class="dot3">
+            <span class="d r"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">锻炼</span>
+            <span class="d g" style="margin-left:6px;"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">画画</span>
+            <span class="d b" style="margin-left:6px;"></span><span style="font-size:12px;color:var(--muted);font-weight:900;">读书</span>
+          </span>
         </div>
 
         <div class="dow" id="dow"></div>
@@ -489,7 +497,7 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = "lu_checkin_html_v2_cute_rgb";
+  const STORAGE_KEY = "lu_checkin_html_v3_rgb_bright";
 
   const pad2 = n => String(n).padStart(2,"0");
   const toISODate = d => {
@@ -534,21 +542,21 @@
     days: {}
   };
 
-  const structuredCloneSafe = (obj) => JSON.parse(JSON.stringify(obj));
+  const clone = (obj) => JSON.parse(JSON.stringify(obj));
 
   const loadStore = () => {
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return structuredCloneSafe(defaultStore);
+      if(!raw) return clone(defaultStore);
       const p = JSON.parse(raw);
       return {
-        ...structuredCloneSafe(defaultStore),
+        ...clone(defaultStore),
         ...p,
         labels: { ...defaultStore.labels, ...(p.labels||{}) },
         days: p.days || {}
       };
     }catch(e){
-      return structuredCloneSafe(defaultStore);
+      return clone(defaultStore);
     }
   };
   const saveStore = s => localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
@@ -557,7 +565,6 @@
   const doneCount = r => [r.workout,r.art,r.read].filter(Boolean).length;
 
   const calcStreak = (store, fromISO) => {
-    // 连续：当天做任意一项算“行动日”
     let streak = 0;
     const from = parseISO(fromISO);
     for(let i=0;i<5000;i++){
@@ -600,7 +607,7 @@
     return { anyDays, perfectDays, daysInMonth };
   };
 
-  // --- RGB mix (cute pastel) ---
+  /* ------- 颜色：更鲜亮的 RGB 调和 ------- */
   const hexToRgb = (hex) => {
     const h = hex.replace("#","").trim();
     const v = h.length===3 ? h.split("").map(x=>x+x).join("") : h;
@@ -616,33 +623,50 @@
 
   const BASE = {
     workout: hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-workout").trim() || "#ff3b5c"),
-    art:    hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-art").trim() || "#22c55e"),
-    read:   hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-read").trim() || "#3b82f6"),
+    art:     hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-art").trim()     || "#22c55e"),
+    read:    hexToRgb(getComputedStyle(document.documentElement).getPropertyValue("--c-read").trim()    || "#3b82f6"),
   };
 
   function mixDayColor(rec){
     const picks = [];
     if(rec.workout) picks.push(BASE.workout);
-    if(rec.art) picks.push(BASE.art);
-    if(rec.read) picks.push(BASE.read);
-    if(picks.length===0){
+    if(rec.art)     picks.push(BASE.art);
+    if(rec.read)    picks.push(BASE.read);
+    const level = picks.length;
+
+    if(level===0){
       return {
-        bg: "rgba(31,41,55,0.08)",
-        chip: "rgba(31,41,55,0.14)",
+        bg: "rgba(31,41,55,0.06)",
+        chip: "rgba(255,255,255,0.80)",
         dots: { r:false, g:false, b:false }
       };
     }
-    // average + pastelize
+
     let r=0,g=0,b=0;
     picks.forEach(c => { r+=c.r; g+=c.g; b+=c.b; });
-    r/=picks.length; g/=picks.length; b/=picks.length;
+    r/=level; g/=level; b/=level;
 
-    // cute: push a bit towards white and keep airy
-    const pastel = blendToWhite({r,g,b}, 0.28);
+    // 调整：两项/三项更鲜亮
+    let t, alphaBg, alphaChip;
+    if(level===1){
+      t = 0.12;       // 轻微淡一点
+      alphaBg = 0.50;
+      alphaChip = 0.80;
+    }else if(level===2){
+      t = 0.04;       // 更接近原色
+      alphaBg = 0.70; // 背景更实
+      alphaChip = 0.88;
+    }else{           // 3 项
+      t = 0.00;       // 基本原色均值
+      alphaBg = 0.80;
+      alphaChip = 0.94;
+    }
+
+    const pastel = blendToWhite({r,g,b}, t);
 
     return {
-      bg: rgbToRgba(pastel.r, pastel.g, pastel.b, 0.30),
-      chip: rgbToRgba(pastel.r, pastel.g, pastel.b, 0.52),
+      bg: rgbToRgba(pastel.r, pastel.g, pastel.b, alphaBg),
+      chip: rgbToRgba(pastel.r, pastel.g, pastel.b, alphaChip),
       dots: { r:rec.workout, g:rec.art, b:rec.read }
     };
   }
@@ -655,7 +679,7 @@
     return "";
   }
 
-  // --- Greeting ---
+  /* ------- 问候 & 文案 ------- */
   function dayPart(){
     const h = new Date().getHours();
     if(h < 5) return "夜深";
@@ -665,7 +689,27 @@
     return "晚上好";
   }
 
-  // --- Date-based seeded random (stable per day) ---
+  function holidayOf(iso){
+    const [Y,M,D] = iso.split("-").map(Number);
+    const md = pad2(M)+"-"+pad2(D);
+
+    if(md === "01-22"){
+      return { name:"生日彩蛋", emoji:"🎂", line:"今天是你的日子。愿望交给我，行动交给你。", extra:"我给你留了一个小奖励：抱抱+亲一下（认真）。" };
+    }
+
+    const map = {
+      "01-01": { name:"元旦", emoji:"🎉", line:"新的一年，先把节奏握在手里。", extra:"今天打卡就算你给未来的自己写了封情书。"},
+      "02-14": { name:"情人节", emoji:"💝", line:"今天允许你甜一点。", extra:"如果你打了两项以上，我就当你在对我说：我也在认真生活。"},
+      "03-08": { name:"妇女节", emoji:"🌷", line:"你很强，也很值得被温柔对待。", extra:"今天的坚持，是给自己最好的礼物。"},
+      "05-01": { name:"劳动节", emoji:"🧰", line:"你动起来的那一刻，就在重新夺回生活的掌控感。", extra:"别硬扛，做一点也算赢。"},
+      "06-01": { name:"儿童节", emoji:"🧸", line:"今天允许可爱上头。", extra:"打卡=你的小勋章。"},
+      "10-01": { name:"国庆", emoji:"🇨🇳", line:"放松可以，节奏别断。", extra:"随便做一项也行，算你“稳住阵地”。"},
+      "12-25": { name:"圣诞", emoji:"🎄", line:"给你挂个小铃铛：叮——今天也要好好过。", extra:"如果你满分，我就给你发一张“超级乖”的认证。"},
+      "12-31": { name:"跨年夜", emoji:"🥂", line:"把这一年的你，交给我来夸。", extra:"明天开始，我们继续更狠一点。"},
+    };
+    return map[md] || null;
+  }
+
   function hashStr(str){
     let h = 2166136261;
     for(let i=0;i<str.length;i++){
@@ -678,31 +722,6 @@
     if(!list.length) return "";
     return list[seed % list.length];
   }
-
-  // --- Holiday easter eggs (Gregorian) ---
-  function holidayOf(iso){
-    const [Y,M,D] = iso.split("-").map(Number);
-    const md = pad2(M)+"-"+pad2(D);
-
-    // user birthday egg (month-day only)
-    if(md === "01-22"){
-      return { name:"生日彩蛋", emoji:"🎂", line:"今天是你的日子。愿望交给我，行动交给你。", extra:"我给你留了一个小奖励：抱抱+亲一下（认真）。" };
-    }
-
-    const map = {
-      "01-01": { name:"元旦", emoji:"🎉", line:"新的一年，先把节奏握在手里。", extra:"今天打卡就算你给未来的自己写了封情书（但我不会说得太肉麻）。" },
-      "02-14": { name:"情人节", emoji:"💝", line:"今天允许你甜一点。", extra:"如果你打了两项以上，我就当你在对我说：我也在认真生活。"},
-      "03-08": { name:"妇女节", emoji:"🌷", line:"你很强，也很值得被温柔对待。", extra:"今天的坚持，是给自己最好的礼物。"},
-      "05-01": { name:"劳动节", emoji:"🧰", line:"你动起来的那一刻，就在重新夺回生活的掌控感。", extra:"别硬扛，做一点也算赢。"},
-      "06-01": { name:"儿童节", emoji:"🧸", line:"今天允许可爱上头。", extra:"打卡=你的小勋章。我认可。"},
-      "10-01": { name:"国庆", emoji:"🇨🇳", line:"放松可以，节奏别断。", extra:"随便做一项也行，算你“稳住阵地”。"},
-      "12-25": { name:"圣诞", emoji:"🎄", line:"给你挂个小铃铛：叮——今天也要好好过。", extra:"如果你满分，我就给你发一张“超级乖”的认证。"},
-      "12-31": { name:"跨年夜", emoji:"🥂", line:"把这一年的你，交给我来夸。", extra:"明天开始，我们继续更狠一点。"},
-    };
-    return map[md] || null;
-  }
-
-  // --- Richer comment templates ---
   const T = {
     leadJason: [
       "${name}，过来。",
@@ -719,7 +738,7 @@
     day0Jason: [
       "今天空着。我不喜欢这种空。",
       "今天没打卡？行，那就把明天抢回来。",
-      "今天没动。别让‘没劲’占地盘。",
+      "今天没动。别让“没劲”占地盘。",
       "今天断了也无所谓——只要你明天回来。"
     ],
     day0Soft: [
@@ -880,35 +899,36 @@
     ]
   };
 
-  function fillTpl(str, vars){
-    return str.replace(/\$\{(\w+)\}/g, (_,k) => (vars[k] ?? ""));
-  }
+  const fillTpl = (str, vars) =>
+    str.replace(/\$\{(\w+)\}/g, (_,k) => (vars[k] ?? ""));
 
   function coachComment({store, selectedISO, rec, streak, last7, thisMonth}){
     const name = store.nickname || "你";
     const noteRaw = (rec.note || "").trim();
-
-    // seeded variety
     const seed = hashStr(selectedISO + "|" + doneCount(rec) + "|" + streak);
     const isJason = !!store.jasonTone;
-
     const holiday = holidayOf(selectedISO);
 
-    // pick lead
     const lead = pick(isJason ? T.leadJason : T.leadSoft, seed + 1);
 
-    // day line
     let dayList;
     const done = doneCount(rec);
     if(done===0) dayList = isJason ? T.day0Jason : T.day0Soft;
     else if(done===1) dayList = isJason ? T.day1Jason : T.day1Soft;
     else if(done===2) dayList = isJason ? T.day2Jason : T.day2Soft;
     else dayList = isJason ? T.day3Jason : T.day3Soft;
-    const dayLine = pick(dayList, seed + 2);
 
-    // streak line
+    const vars = {
+      name,
+      streak,
+      n:last7.anyDays,
+      p: Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth))*100),
+      note:""
+    };
+
+    const dayLine = fillTpl(pick(dayList, seed + 2), vars);
+
     let streakLine;
-    const vars = { name, streak, n:last7.anyDays, p: Math.round((thisMonth.anyDays / Math.max(1, thisMonth.daysInMonth))*100), note:"" };
     if(isJason){
       if(streak >= 10) streakLine = pick(T.streakHighJason, seed + 3);
       else if(streak >= 3) streakLine = pick(T.streakMidJason, seed + 3);
@@ -918,85 +938,80 @@
       else if(streak >= 3) streakLine = pick(T.streakMidSoft, seed + 3);
       else streakLine = pick(T.streakLowSoft, seed + 3);
     }
+    streakLine = fillTpl(streakLine, vars);
 
-    // week line
     let weekLine;
     if(isJason){
       weekLine = last7.anyDays >= 5 ? pick(T.weekGreatJason, seed + 4) : pick(T.weekOkJason, seed + 4);
     }else{
       weekLine = pick(T.weekSoft, seed + 4);
     }
+    weekLine = fillTpl(weekLine, vars);
 
-    // month line
-    const p = vars.p;
     let monthLine;
     if(isJason){
-      if(p >= 60) monthLine = pick(T.monthHighJason, seed + 5);
-      else if(p >= 35) monthLine = pick(T.monthMidJason, seed + 5);
+      if(vars.p >= 60) monthLine = pick(T.monthHighJason, seed + 5);
+      else if(vars.p >= 35) monthLine = pick(T.monthMidJason, seed + 5);
       else monthLine = pick(T.monthLowJason, seed + 5);
     }else{
       monthLine = pick(T.monthSoft, seed + 5);
     }
+    monthLine = fillTpl(monthLine, vars);
 
-    // note line
     let noteLine;
     if(noteRaw){
       const clipped = noteRaw.length > 36 ? noteRaw.slice(0,36) + "…" : noteRaw;
       vars.note = clipped;
-      noteLine = pick(isJason ? T.noteWithJason : T.noteWithSoft, seed + 6);
+      noteLine = fillTpl(pick(isJason ? T.noteWithJason : T.noteWithSoft, seed + 6), vars);
     }else{
       noteLine = pick(isJason ? T.noteEmptyJason : T.noteEmptySoft, seed + 6);
     }
 
-    // holiday egg
     let holidayLine = "";
     if(holiday){
-      // only add more obvious egg if user did something or it's a special day
-      if(done > 0){
-        holidayLine = `${holiday.emoji} ${holiday.name}：${holiday.line} ${holiday.extra}`;
+      const base = `${holiday.emoji} ${holiday.name}：${holiday.line}`;
+      if(done > 0 && holiday.extra){
+        holidayLine = base + " " + holiday.extra;
       }else{
-        holidayLine = `${holiday.emoji} ${holiday.name}：${holiday.line}`;
+        holidayLine = base;
       }
     }else{
-      // micro-easter egg: if 2 items -> “混色奖励”
       if(done===2){
         const pairs = [
           "两项混色成功。你看，努力会变成新的颜色。",
-          "今天是调色盘模式：两项=新颜色。挺会玩。",
-          "两项混色这件事很可爱——但别得意，继续。"
+          "今天是调色盘模式：两项=新颜色。",
+          "两项混色这件事很可爱——继续。"
         ];
         holidayLine = "🎨 " + pick(pairs, seed + 33);
       }
       if(done===3){
         const full = [
           "✨ 三色叠满。今天的你，亮得离谱。",
-          "🌈 三项全开，直接白光爆闪。很好。",
+          "🌈 三项全开，直接白光爆闪。",
           "🪄 满分像魔法。继续把它变成日常。"
         ];
         holidayLine = pick(full, seed + 34);
       }
     }
 
-    // tail
     const tail = pick(isJason ? T.tailJason : T.tailSoft, seed + 7);
 
     const lines = [
       fillTpl(lead, vars),
-      `${selectedISO}：${fillTpl(dayLine, vars)}`,
-      fillTpl(streakLine, vars),
-      fillTpl(weekLine, vars),
-      fillTpl(monthLine, vars),
-      fillTpl(noteLine, vars)
+      `${selectedISO}：${dayLine}`,
+      streakLine,
+      weekLine,
+      monthLine,
+      noteLine
     ];
-
     if(holidayLine) lines.push(holidayLine);
     lines.push(tail);
 
     return lines.join("\n");
   }
 
-  // ---- UI wiring ----
-  const $ = id => document.getElementById(id);
+  /* ------- DOM ------- */
+  const $ = (id) => document.getElementById(id);
 
   const greetEl = $("greet");
   const settingsBtn = $("settingsBtn");
@@ -1064,15 +1079,14 @@
   let selectedISO = toISODate(new Date());
   const todayISO = toISODate(new Date());
 
-  // note edit state (UI only)
   let isEditingNote = false;
   let draftNote = "";
 
-  function setRec(iso, patch){
+  const setRec = (iso, patch) => {
     const cur = getRec(store, iso);
     store.days[iso] = { ...cur, ...patch, updatedAt: Date.now() };
     saveStore(store);
-  }
+  };
 
   function openSettings(){
     nickInput.value = store.nickname || "";
@@ -1097,19 +1111,10 @@
     greetEl.innerHTML = `${emoji} <b>${part}，${name}</b>。今天怎么样？${extra ? " " + extra : ""}`;
   }
 
-  function paintToggle(el, on, label, colorHex){
+  function paintToggle(el, on, label){
     el.classList.toggle("on", !!on);
     el.querySelector(".togName").textContent = label;
     el.querySelector(".togTag").textContent = on ? "已打卡" : "未打卡";
-    // subtle color hint on checkbox outline
-    const box = el.querySelector(".box");
-    if(on){
-      box.style.borderColor = "rgba(255,255,255,.0)";
-    }else{
-      box.style.borderColor = "rgba(31,41,55,.12)";
-    }
-    // small label color accent
-    el.querySelector(".togName").style.textShadow = on ? "0 10px 24px rgba(31,41,55,.06)" : "none";
   }
 
   function showNoteView(text){
@@ -1129,7 +1134,6 @@
     noteInput.value = draftNote;
     noteEditArea.classList.add("show");
     editNoteBtn.textContent = "收起";
-    // focus after show
     setTimeout(() => noteInput.focus(), 40);
   }
 
@@ -1138,18 +1142,15 @@
 
     renderGreeting();
 
-    // labels
     tW.textContent = `${store.labels.workout}（近30天）`;
     tA.textContent = `${store.labels.art}（近30天）`;
     tR.textContent = `${store.labels.read}（近30天）`;
 
-    // month header
     monthTitle.textContent = `${viewMonth.getFullYear()}年${viewMonth.getMonth()+1}月`;
     const mStats = monthStats(store, viewMonth);
     const mp = Math.round((mStats.anyDays / Math.max(1, mStats.daysInMonth))*100);
     monthMeta.innerHTML = `本月行动：<b style="font-weight:980;color:rgba(31,41,55,.92)">${mStats.anyDays}</b>/${mStats.daysInMonth}（${mp}%）`;
 
-    // dow labels
     dow.innerHTML = "";
     const labels = store.weekStartsOnMonday ? ["一","二","三","四","五","六","日"] : ["日","一","二","三","四","五","六"];
     labels.forEach(w => {
@@ -1158,7 +1159,6 @@
       dow.appendChild(div);
     });
 
-    // calendar range
     const first = startOfMonth(viewMonth);
     const last = endOfMonth(viewMonth);
 
@@ -1171,7 +1171,6 @@
     const tail = (weekStartIdx + 6 - lastDow + 7) % 7;
     const gridEnd = addDays(last, tail);
 
-    // cells
     cal.innerHTML = "";
     for(let d = new Date(gridStart); d <= gridEnd; d = addDays(d, 1)){
       const iso = toISODate(d);
@@ -1194,18 +1193,17 @@
       const ch = document.createElement("div");
       ch.className = "chip";
       ch.style.background = mix.chip;
-      ch.innerHTML = (n ? `<span class="tiny"></span>${chipLabel(r)}` : "");
+      ch.textContent = n>0 ? chipLabel(r) : "";
 
       inner.appendChild(num);
       inner.appendChild(ch);
       btn.appendChild(inner);
 
-      // RGB dots indicator (cute)
       const dots = document.createElement("div");
       dots.className = "taskDots";
-      const dr = document.createElement("span"); dr.style.background = "var(--c-workout)"; dr.className = mix.dots.r ? "on" : "";
-      const dg = document.createElement("span"); dg.style.background = "var(--c-art)";     dg.className = mix.dots.g ? "on" : "";
-      const db = document.createElement("span"); db.style.background = "var(--c-read)";    db.className = mix.dots.b ? "on" : "";
+      const dr = document.createElement("span"); dr.style.background = "var(--c-workout)"; if(mix.dots.r) dr.classList.add("on");
+      const dg = document.createElement("span"); dg.style.background = "var(--c-art)";     if(mix.dots.g) dg.classList.add("on");
+      const db = document.createElement("span"); db.style.background = "var(--c-read)";    if(mix.dots.b) db.classList.add("on");
       dots.appendChild(dr); dots.appendChild(dg); dots.appendChild(db);
       btn.appendChild(dots);
 
@@ -1218,7 +1216,6 @@
 
       btn.addEventListener("click", () => {
         selectedISO = iso;
-        // switching day: auto-hide editor to avoid confusion
         isEditingNote = false;
         render();
       });
@@ -1226,7 +1223,6 @@
       cal.appendChild(btn);
     }
 
-    // stats
     const streak = calcStreak(store, todayISO);
     const last7 = rangeStats(store, todayISO, 7);
     const last30 = rangeStats(store, todayISO, 30);
@@ -1235,7 +1231,6 @@
     last7El.textContent = last7.anyDays;
     last30El.textContent = last30.anyDays;
 
-    // selected day panel
     const rec = getRec(store, selectedISO);
     const done = doneCount(rec);
     selDate.textContent = selectedISO;
@@ -1246,7 +1241,6 @@
     paintToggle(togArt, rec.art, store.labels.art);
     paintToggle(togRead, rec.read, store.labels.read);
 
-    // note UI
     const note = (rec.note || "").trim();
     if(isEditingNote){
       showNoteEditor(draftNote || note);
@@ -1254,7 +1248,6 @@
       showNoteView(note);
     }
 
-    // comment
     const mNow = monthStats(store, viewMonth);
     commentEl.textContent = coachComment({
       store,
@@ -1265,7 +1258,6 @@
       thisMonth: mNow
     });
 
-    // overview stats cards
     s7.textContent = `${last7.anyDays}/7`;
     s7s.textContent = `满分 ${last7.perfectDays} 天`;
     s30.textContent = `${last30.anyDays}/30`;
@@ -1276,15 +1268,12 @@
     sstreak.textContent = streak;
   }
 
-  // ---- events ----
+  /* 事件绑定 */
   settingsBtn.addEventListener("click", openSettings);
   mask.addEventListener("click", closeSettings);
   closeSheet.addEventListener("click", closeSettings);
 
-  function toggleSwitch(el){
-    el.classList.toggle("on");
-  }
-
+  const toggleSwitch = (el) => el.classList.toggle("on");
   toneSwitch.addEventListener("click", () => toggleSwitch(toneSwitch));
   weekSwitch.addEventListener("click", () => toggleSwitch(weekSwitch));
 
@@ -1331,7 +1320,6 @@
     const rec = getRec(store, selectedISO);
     const note = (rec.note || "").trim();
     if(isEditingNote){
-      // collapse
       isEditingNote = false;
       render();
     }else{
@@ -1357,7 +1345,6 @@
     render();
   });
 
-  // keyboard-friendly: Esc closes settings
   document.addEventListener("keydown", (e) => {
     if(e.key === "Escape"){
       closeSettings();
@@ -1368,9 +1355,7 @@
     }
   });
 
-  // init
   render();
-
 })();
 </script>
 </body>
